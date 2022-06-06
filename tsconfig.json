@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+    "target": "es2018",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "declaration": true,
+    "typeRoots": ["node_modules/@types", "types"]
+  },
+  "include": ["scripts/**/*", "tasks/**/*", "test/**/*", "build/typechain/**/*", "types/**/*"],
+  "files": ["./hardhat.config.ts"]
+}
