@@ -17,7 +17,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal {
     modifier onlyGroupAdmin(uint256 groupId) {
         require(
             _getGroupAdmin(groupId) == msg.sender,
-            "Semaphore: caller is not the group admin"
+            "SemaphoreGroup: caller is not the group admin"
         );
         _;
     }

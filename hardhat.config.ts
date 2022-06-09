@@ -13,7 +13,6 @@ import path from "path";
 import "solidity-coverage";
 import "./tasks/accounts";
 import "./tasks/deploy-facet";
-import "./tasks/deploy-diamond";
 import "./tasks/deploy-verifier";
 
 dotenv.config();
