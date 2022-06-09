@@ -12,7 +12,10 @@ import "hardhat-spdx-license-identifier";
 import path from "path";
 import "solidity-coverage";
 import "./tasks/accounts";
-import "./tasks/deploy-facet";
+import "./tasks/deploy-poseidonT3";
+import "./tasks/deploy-SemaphoreGroupsFacet";
+import "./tasks/deploy-semaphore";
+import "./tasks/deploy-facets";
 import "./tasks/deploy-verifier";
 
 dotenv.config();

@@ -3,8 +3,8 @@
 pragma solidity ^0.8.4;
 
 import {OwnableInternal} from "@solidstate/contracts/access/ownable/OwnableInternal.sol";
-import {SemaphoreGroupsBase} from "../semaphore/base/SemaphoreGroupsBase.sol";
-import {SemaphoreGroupsBaseStorage} from "../semaphore/base/SemaphoreGroupsBaseStorage.sol";
+import {SemaphoreGroupsBase} from "../semaphore/base/SemaphoreGroupsBase/SemaphoreGroupsBase.sol";
+import {SemaphoreGroupsBaseStorage} from "../semaphore/base/SemaphoreGroupsBase/SemaphoreGroupsBaseStorage.sol";
 
 contract SemaphoreGroupsFacet is SemaphoreGroupsBase, OwnableInternal {
     function _beforeCreateGroup(

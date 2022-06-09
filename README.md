@@ -33,6 +33,12 @@ Automatically upgrade dependencies with yarn-up:
 yarn upgrade-dependencies
 ```
 
+## Deployment
+Deploy SemaphoreFacet
+```bash
+yarn deploy:facets --facets {name: "SemaphoreFacet", args:[]}
+```
+
 ### Testing
 
 Test contracts with Hardhat and generate gas report using `hardhat-gas-reporter`:

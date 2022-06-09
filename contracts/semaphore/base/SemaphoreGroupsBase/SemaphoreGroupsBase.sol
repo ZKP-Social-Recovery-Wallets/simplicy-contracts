@@ -16,6 +16,23 @@ abstract contract SemaphoreGroupsBase is
 {
     using SemaphoreGroupsBaseStorage for SemaphoreGroupsBaseStorage.Layout;
 
+     function createGroup(
+        uint256 groupId,
+        uint8 depth,
+        uint256 zeroValue,
+        address admin
+    ) external override {
+        _beforeCreateGroup(groupId, depth, zeroValue, admin);
+
+        _createGroup(groupId, depth, zeroValue);
+
+        _setGroupAdmin(groupId, admin);
+
+        emit GroupAdminUpdated(groupId, address(0), admin);
+
+        _afterCreateGroup(groupId, depth, zeroValue, admin);
+    }
+
     function updateGroupAdmin(uint256 groupId, address newAdmin)
         external
         override
@@ -107,20 +124,7 @@ abstract contract SemaphoreGroupsBase is
         return _getNumberOfLeaves(groupId);
     }
 
-    function createGroup(
-        uint256 groupId,
-        uint8 depth,
-        uint256 zeroValue,
-        address admin
-    ) public override {
-        _beforeCreateGroup(groupId, depth, zeroValue, admin);
-
-        _createGroup(groupId, depth, zeroValue);
-
-        _setGroupAdmin(groupId, admin);
-
-        emit GroupAdminUpdated(groupId, address(0), admin);
-
-        _afterCreateGroup(groupId, depth, zeroValue, admin);
+    function getGroupAdmin(uint256 groupId) public view virtual returns (address) {
+        return _getGroupAdmin(groupId);
     }
 }

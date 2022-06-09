@@ -2,14 +2,11 @@
 
 pragma solidity ^0.8.4;
 
-library SemaphoreStorage {
-    struct Verifier {
-        address contractAddress;
-        uint8 merkleTreeDepth;
-    }
+import {IVerifier} from "../interfaces/IVerifier.sol";
 
+library SemaphoreStorage {
     struct Layout {
-        mapping(uint8 => Verifier) verifiers;
+        mapping(uint8 => IVerifier) verifiers;
     }
 
     bytes32 internal constant STORAGE_SLOT =
@@ -22,19 +19,19 @@ library SemaphoreStorage {
         }
     }
 
-    function setVerifierAddress(
-        Layout storage s,
-        uint8 index,
-        address verifierContractAddress
-    ) internal {
-        s.verifiers[index].contractAddress = verifierContractAddress;
-    }
+    // function setVerifierAddress(
+    //     Layout storage s,
+    //     uint8 index,
+    //     address verifierContractAddress
+    // ) internal {
+    //     s.verifiers[index].contractAddress = verifierContractAddress;
+    // }
 
-    function setVerifierMerkleTreeDepth(
-        Layout storage s,
-        uint8 index,
-        uint8 verifierMerkleTreeDepth
-    ) internal {
-        s.verifiers[index].merkleTreeDepth = verifierMerkleTreeDepth;
-    }
+    // function setVerifierMerkleTreeDepth(
+    //     Layout storage s,
+    //     uint8 index,
+    //     uint8 verifierMerkleTreeDepth
+    // ) internal {
+    //     s.verifiers[index].merkleTreeDepth = verifierMerkleTreeDepth;
+    // }
 }

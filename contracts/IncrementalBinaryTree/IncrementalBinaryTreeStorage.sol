@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-library SemaphoreGroupsBaseStorage {
+library IncrementalBinaryTreeStorage {
     struct IncrementalTreeData {
         uint8 depth;
         uint256 root;
@@ -12,12 +12,11 @@ library SemaphoreGroupsBaseStorage {
     }
 
     struct Layout {
-        mapping(uint256 => IncrementalTreeData) groups;
-        mapping(uint256 => address) groupAdmins;
+         mapping(uint256 => IncrementalTreeData) trees;
     }
 
     bytes32 internal constant STORAGE_SLOT =
-        keccak256("simplicy.contracts.storage.SemaphoreGroupsBase");
+        keccak256("simplicy.contracts.storage.IncrementalBinaryTree");
 
     function layout() internal pure returns (Layout storage l) {
         bytes32 slot = STORAGE_SLOT;
@@ -28,38 +27,30 @@ library SemaphoreGroupsBaseStorage {
 
     function setDepth(
         Layout storage s,
-        uint256 groupId,
+        uint256 treeId,
         uint8 depth
     ) internal {
-        s.groups[groupId].depth = depth;
+        s.trees[treeId].depth = depth;
     }
 
     function setRoot(
         Layout storage s,
-        uint256 groupId,
+        uint256 treeId,
         uint256 root
     ) internal {
-        s.groups[groupId].root = root;
+        s.trees[treeId].root = root;
     }
 
-    function setNumberOfLeaves(Layout storage s, uint256 groupId) internal {
-        s.groups[groupId].numberOfLeaves += 1;
+    function setNumberOfLeaves(Layout storage s, uint256 treeId) internal {
+        s.trees[treeId].numberOfLeaves += 1;
     }
 
     function setZeroes(
         Layout storage s,
-        uint256 groupId,
+        uint256 treeId,
         uint256 leafIndex,
         uint256 zeroValue
     ) internal {
-        s.groups[groupId].zeroes[leafIndex] = zeroValue;
-    }
-
-    function setGroupAdmin(
-        Layout storage s,
-        uint256 groupId,
-        address admin
-    ) internal {
-        s.groupAdmins[groupId] = admin;
+        s.trees[treeId].zeroes[leafIndex] = zeroValue;
     }
 }
