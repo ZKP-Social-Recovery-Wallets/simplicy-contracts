@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.1;
+pragma solidity ^0.8.4;
 
 /******************************************************************************\
 * Authors: Nick Mudge (https://twitter.com/mudgen)
@@ -15,7 +15,11 @@ import {OwnershipFacet} from "./facets/OwnershipFacet.sol";
 contract Diamond {
     constructor(address _contractOwner) {
         LibDiamond.setContractOwner(_contractOwner);
-        LibDiamond.addDiamondFunctions(address(new DiamondCutFacet()), address(new DiamondLoupeFacet()), address(new OwnershipFacet()));
+        LibDiamond.addDiamondFunctions(
+            address(new DiamondCutFacet()),
+            address(new DiamondLoupeFacet()),
+            address(new OwnershipFacet())
+        );
     }
 
     // Find facet for function that is called and execute the
@@ -33,12 +37,12 @@ contract Diamond {
             let result := delegatecall(gas(), facet, 0, calldatasize(), 0, 0)
             returndatacopy(0, 0, returndatasize())
             switch result
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
     }
 }

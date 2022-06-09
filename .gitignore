@@ -56,6 +56,10 @@ build/contracts
 build/typechain
 dist
 
+#typechain
+typechain-types/
+typechain
+
 # Hardhat
 artifacts
 cache

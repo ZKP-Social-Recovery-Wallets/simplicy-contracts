@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.1;
+pragma solidity ^0.8.4;
 
 /******************************************************************************\
 * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
 /******************************************************************************/
 
 interface IDiamondCut {
-    enum FacetCutAction {Add, Replace, Remove}
+    enum FacetCutAction {
+        Add,
+        Replace,
+        Remove
+    }
 
     struct FacetCut {
         address facetAddress;

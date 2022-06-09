@@ -1,46 +1,56 @@
-# Advanced Sample Hardhat Project
+# Simplicy contracts
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+## Development
 
-Try running some of the following tasks:
+Install dependencies via Yarn:
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+```bash
+yarn install
 ```
 
-# Etherscan verification
+Setup Husky to format code on commit:
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/deploy.ts
+```bash
+yarn prepare
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+Link local packages and install remaining dependencies via Lerna:
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+```bash
+yarn lerna bootstrap
 ```
 
-# Performance optimizations
+Compile contracts via Hardhat:
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+```bash
+yarn compile
+```
+
+Automatically upgrade dependencies with yarn-up:
+
+```bash
+yarn upgrade-dependencies
+```
+
+### Testing
+
+Test contracts with Hardhat and generate gas report using `hardhat-gas-reporter`:
+
+```bash
+yarn test
+```
+
+Generate a code coverage report using `solidity-coverage`:
+
+```bash
+yarn coverage
+```
+
+### Publication
+
+Publish packages via Lerna:
+
+```bash
+yarn lerna-publish
+```

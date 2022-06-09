@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.1;
+pragma solidity ^0.8.4;
 
 /**
     @title ERC-1155 Multi Token Standard
@@ -60,7 +60,10 @@ interface IERC1155 {
     @param _id     ID of the token
     @return        The _owner's balance of the token type requested
     */
-    function balanceOf(address _owner, uint256 _id) external view returns (uint256);
+    function balanceOf(address _owner, uint256 _id)
+        external
+        view
+        returns (uint256);
 
     /**
     @notice Get the balance of multiple account/token pairs
@@ -68,7 +71,10 @@ interface IERC1155 {
     @param _ids    ID of the tokens
     @return        The _owner's balance of the token types requested (i.e. balance for each (owner, id) pair)
     */
-    function balanceOfBatch(address[] calldata _owners, uint256[] calldata _ids) external view returns (uint256[] memory);
+    function balanceOfBatch(address[] calldata _owners, uint256[] calldata _ids)
+        external
+        view
+        returns (uint256[] memory);
 
     /**
     @notice Enable or disable approval for a third party ("operator") to manage all of the caller's tokens.
@@ -84,5 +90,8 @@ interface IERC1155 {
     @param _operator  Address of authorized operator
     @return           True if the operator is approved, false if not
     */
-    function isApprovedForAll(address _owner, address _operator) external view returns (bool);
+    function isApprovedForAll(address _owner, address _operator)
+        external
+        view
+        returns (bool);
 }

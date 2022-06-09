@@ -4,7 +4,7 @@
  * Please reach out with any questions or concerns
  * https://github.com/hamdiallam/Solidity-RLP/blob/e681e25a376dbd5426b509380bc03446f05d0f97/contracts/RLPReader.sol
  */
-pragma solidity 0.8.1;
+pragma solidity ^0.8.4;
 
 library RLPReader {
     uint8 constant STRING_SHORT_START = 0x80;
@@ -21,7 +21,11 @@ library RLPReader {
     /*
      * @param item RLP encoded bytes
      */
-    function toRlpItem(bytes memory item) internal pure returns (RLPItem memory) {
+    function toRlpItem(bytes memory item)
+        internal
+        pure
+        returns (RLPItem memory)
+    {
         require(item.length > 0, "RLPReader: INVALID_BYTES_LENGTH");
         uint256 memPtr;
         assembly {
@@ -34,14 +38,21 @@ library RLPReader {
     /*
      * @param item RLP encoded list in bytes
      */
-    function toList(RLPItem memory item) internal pure returns (RLPItem[] memory) {
+    function toList(RLPItem memory item)
+        internal
+        pure
+        returns (RLPItem[] memory)
+    {
         unchecked {
             require(isList(item), "RLPReader: ITEM_NOT_LIST");
 
             uint256 items = numItems(item);
             RLPItem[] memory result = new RLPItem[](items);
             uint256 listLength = _itemLength(item.memPtr);
-            require(listLength == item.len, "RLPReader: LIST_DECODED_LENGTH_MISMATCH");
+            require(
+                listLength == item.len,
+                "RLPReader: LIST_DECODED_LENGTH_MISMATCH"
+            );
 
             uint256 memPtr = item.memPtr + _payloadOffset(item.memPtr);
             uint256 dataLen;
@@ -70,7 +81,11 @@ library RLPReader {
     /** RLPItem conversions into data types **/
 
     // @returns raw rlp encoding in bytes
-    function toRlpBytes(RLPItem memory item) internal pure returns (bytes memory) {
+    function toRlpBytes(RLPItem memory item)
+        internal
+        pure
+        returns (bytes memory)
+    {
         bytes memory result = new bytes(item.len);
 
         uint256 ptr;
@@ -95,7 +110,10 @@ library RLPReader {
         require(item.len <= 33, "RLPReader: INVALID_UINT_LENGTH");
 
         uint256 itemLength = _itemLength(item.memPtr);
-        require(itemLength == item.len, "RLPReader: UINT_DECODED_LENGTH_MISMATCH");
+        require(
+            itemLength == item.len,
+            "RLPReader: UINT_DECODED_LENGTH_MISMATCH"
+        );
 
         uint256 offset = _payloadOffset(item.memPtr);
         uint256 len = item.len - offset;
@@ -116,7 +134,10 @@ library RLPReader {
     // enforces 32 byte length
     function toUintStrict(RLPItem memory item) internal pure returns (uint256) {
         uint256 itemLength = _itemLength(item.memPtr);
-        require(itemLength == item.len, "RLPReader: UINT_STRICT_DECODED_LENGTH_MISMATCH");
+        require(
+            itemLength == item.len,
+            "RLPReader: UINT_STRICT_DECODED_LENGTH_MISMATCH"
+        );
         // one byte prefix
         require(item.len == 33, "RLPReader: INVALID_UINT_STRICT_LENGTH");
 
@@ -131,7 +152,10 @@ library RLPReader {
 
     function toBytes(RLPItem memory item) internal pure returns (bytes memory) {
         uint256 listLength = _itemLength(item.memPtr);
-        require(listLength == item.len, "RLPReader: BYTES_DECODED_LENGTH_MISMATCH");
+        require(
+            listLength == item.len,
+            "RLPReader: BYTES_DECODED_LENGTH_MISMATCH"
+        );
         uint256 offset = _payloadOffset(item.memPtr);
 
         uint256 len = item.len - offset; // data length
@@ -160,7 +184,10 @@ library RLPReader {
             uint256 endPtr = item.memPtr + item.len;
             while (currPtr < endPtr) {
                 currPtr = currPtr + _itemLength(currPtr); // skip over an item
-                require(currPtr <= endPtr, "RLPReader: NUM_ITEMS_DECODED_LENGTH_MISMATCH");
+                require(
+                    currPtr <= endPtr,
+                    "RLPReader: NUM_ITEMS_DECODED_LENGTH_MISMATCH"
+                );
                 count++;
             }
 
@@ -177,7 +204,8 @@ library RLPReader {
         }
 
         if (byte0 < STRING_SHORT_START) itemLen = 1;
-        else if (byte0 < STRING_LONG_START) itemLen = byte0 - STRING_SHORT_START + 1;
+        else if (byte0 < STRING_LONG_START)
+            itemLen = byte0 - STRING_SHORT_START + 1;
         else if (byte0 < LIST_SHORT_START) {
             assembly {
                 let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
@@ -210,7 +238,10 @@ library RLPReader {
         }
 
         if (byte0 < STRING_SHORT_START) return 0;
-        else if (byte0 < STRING_LONG_START || (byte0 >= LIST_SHORT_START && byte0 < LIST_LONG_START)) return 1;
+        else if (
+            byte0 < STRING_LONG_START ||
+            (byte0 >= LIST_SHORT_START && byte0 < LIST_LONG_START)
+        ) return 1;
         else if (byte0 < LIST_SHORT_START)
             // being explicit
             return byte0 - (STRING_LONG_START - 1) + 1;
