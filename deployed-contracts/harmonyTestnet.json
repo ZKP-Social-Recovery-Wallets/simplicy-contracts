@@ -1,0 +1,107 @@
+[
+    {
+        "name": "Verifier16",
+        "address": "0xEC4b5d3cB604D4771473F9E58394A45619C38BB2"
+    },
+    {
+        "name": "Verifier17",
+        "address": "0x9BBCD95F0D06C6ff992E2baC305cC7C004101214"
+    },
+    {
+        "name": "Verifier18",
+        "address": "0x4cEcE384bCB377EB7a3d39449a96478f5fa5fa72"
+    },
+    {
+        "name": "Verifier19",
+        "address": "0x9671cBE0C930DC94085118dB0197e861abF74e02"
+    },
+    {
+        "name": "Verifier20",
+        "address": "0x01F5C5E69AC1bcBC41Cef0a90A43A8e5A79cFb69"
+    },
+    {
+        "name": "Verifier21",
+        "address": "0x8d2171b7dDC7F6B0f04657835a6b19F04B821353"
+    },
+    {
+        "name": "Verifier22",
+        "address": "0x64D87dC944Fb6956Ff09b4a1da2BfBFf4F78f976"
+    },
+    {
+        "name": "Verifier23",
+        "address": "0xa8007c877333508A07eA9f16CF2a2415057Ec0BC"
+    },
+    {
+        "name": "Verifier24",
+        "address": "0x434a85Da614E439929e7480464B18c1cea043B19"
+    },
+    {
+        "name": "Verifier25",
+        "address": "0x21176AA38497bdeab3CdB4368CFF53c428B001f7"
+    },
+    {
+        "name": "Verifier26",
+        "address": "0x48164EcB1CB426C72DCE0421F4426daE264724a7"
+    },
+    {
+        "name": "Verifier27",
+        "address": "0x50c3B09c4b478bd88D0ED14B056AcaFb679Bd345"
+    },
+    {
+        "name": "Verifier28",
+        "address": "0xbDc6e16F514e8d8098ABc90Ab40482d5CbD7c9Aa"
+    },
+    {
+        "name": "Verifier29",
+        "address": "0x6c3Ebf4d06e9595248fA7cc506ad87CffE445dee"
+    },
+    {
+        "name": "Verifier30",
+        "address": "0x6fCe423A2fDDe6788a27a99b59e0Cb40579CE988"
+    },
+    {
+        "name": "Verifier31",
+        "address": "0xCD81D914F1032F7d4c4AB088546c7d70A438cFC3"
+    },
+    {
+        "name": "Verifier32",
+        "address": "0x9eE3cC20Eb1e6a695192A9EDB0512694d31d81bf"
+    },
+    {
+        "name": "Alice SimplicyWalletDiamond",
+        "address": "0x4537224A3332FAa4d179d6d2fcD776D4bF96fC39"
+    },
+    {
+        "name": "Bob SimplicyWalletDiamond",
+        "address": "0x93Fb183E6aFcf5193CDdc3bB5dA1b511a9909dc6"
+    },
+    {
+        "name": "PoseidonT3",
+        "address": "0x18145aa8e5eb71959EaAC9Be2B383A070E80300A"
+    },
+    {
+        "name": "SemaphoreGroupsFacet",
+        "address": "0x5a6A9c1412179ef061CDF328E6b66BB8c5F337B6"
+    },
+    {
+        "name": "SemaphoreFacet",
+        "address": "0x532E815c80198b78512858F4cf125be4858c5e9A"
+    }
+][
+    {
+        "name": "Alice setVerifiers",
+        "hash": "0x24ba2e72e35e9024fd79f2e8dbb58ace8d18151318aceb656653f50c65faa5c1"
+    },
+    {
+        "name": "Bob setVerifiers",
+        "hash": "0x17e5c36ae0cb644a841a8b359fb8ff7f67b99120e1a082cf7d0a4e06d74abb18"
+    },
+    {
+        "name": "aliceCreateGroupTransaction",
+        "hash": "0x4303f2724f5d7667f625b0d00ed1ce6ede214cbef869d1cc7e36f2f2cdb88811"
+    },
+    {
+        "name": "bobCreateGroupTransaction",
+        "hash": "0x3ecfc59ade0c2eefb3aa8b7a896e12142ea60f097232b975324f51f87c2e08a2"
+    }
+]
