@@ -3,7 +3,6 @@
 pragma solidity ^0.8.4;
 
 import {ISemaphoreGroups} from "./ISemaphoreGroups.sol";
-import {ISemaphoreGroupsBase} from "./ISemaphoreGroupsBase.sol";
 import {SemaphoreGroupsBaseInternal} from "./SemaphoreGroupsBaseInternal.sol";
 import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
 
@@ -11,12 +10,12 @@ import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
  * @title Base SemaphoreGroups functions, excluding optional extensions
  */
 abstract contract SemaphoreGroupsBase is
-    ISemaphoreGroupsBase,
+    ISemaphoreGroups,
     SemaphoreGroupsBaseInternal
 {
     using SemaphoreGroupsBaseStorage for SemaphoreGroupsBaseStorage.Layout;
 
-     function createGroup(
+    function createGroup(
         uint256 groupId,
         uint8 depth,
         uint256 zeroValue,
@@ -124,7 +123,12 @@ abstract contract SemaphoreGroupsBase is
         return _getNumberOfLeaves(groupId);
     }
 
-    function getGroupAdmin(uint256 groupId) public view virtual returns (address) {
+    function getGroupAdmin(uint256 groupId)
+        public
+        view
+        virtual
+        returns (address)
+    {
         return _getGroupAdmin(groupId);
     }
 }

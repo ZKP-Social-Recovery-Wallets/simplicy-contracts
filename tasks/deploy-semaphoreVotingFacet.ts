@@ -1,10 +1,12 @@
 import { Contract } from "ethers";
 import { task, types } from "hardhat/config";
 
-task("deploy:semaphore", "Deploy a Semaphore contract")
+task("deploy:semaphoreVotingFacet", "Deploy a Semaphore Voting Facet")
   .addOptionalParam<boolean>("logs", "Print the logs", true, types.boolean)
   .setAction(async ({ logs }, { ethers }): Promise<Contract> => {
-    const ContractFactory = await ethers.getContractFactory("SemaphoreFacet");
+    const ContractFactory = await ethers.getContractFactory(
+      "SemaphoreVotingFacet"
+    );
 
     const contract = await ContractFactory.deploy();
 
@@ -12,7 +14,7 @@ task("deploy:semaphore", "Deploy a Semaphore contract")
 
     logs &&
       console.log(
-        `SemaphoreFacet contract has been deployed to: ${contract.address}`
+        `SemaphoreVotingFacet contract has been deployed to: ${contract.address}`
       );
 
     return contract;

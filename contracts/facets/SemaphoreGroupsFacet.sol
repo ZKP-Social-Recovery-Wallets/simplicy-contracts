@@ -7,10 +7,19 @@ import {SemaphoreGroupsBase} from "../semaphore/base/SemaphoreGroupsBase/Semapho
 import {SemaphoreGroupsBaseStorage} from "../semaphore/base/SemaphoreGroupsBase/SemaphoreGroupsBaseStorage.sol";
 
 contract SemaphoreGroupsFacet is SemaphoreGroupsBase, OwnableInternal {
+    /**
+     * @notice return the current version of SemaphoreGroupsFacet
+     */
+    function semaphoreGroupsFacetVersion() public pure returns (string memory) {
+        return "0.0.1";
+    }
+
     function _beforeCreateGroup(
         uint256 groupId,
         uint8 depth,
         uint256 zeroValue,
         address admin
-    ) internal view virtual override onlyOwner {}
+    ) internal view virtual override onlyOwner {
+        super._beforeCreateGroup(groupId, depth, zeroValue, admin);
+    }
 }

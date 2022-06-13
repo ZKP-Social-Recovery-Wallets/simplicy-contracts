@@ -34,9 +34,9 @@ yarn upgrade-dependencies
 ```
 
 ## Deployment
-Deploy SemaphoreFacet
+Deploy facets
 ```bash
-yarn deploy:facets --facets {name: "SemaphoreFacet", args:[]}
+yarn deploy:facets --facets '[{"name": "WalletFactoryFacet"}, {"name": "SemaphoreFacet"}, {"name": "SemaphoreVotingFacet"}]'
 ```
 
 ### Testing

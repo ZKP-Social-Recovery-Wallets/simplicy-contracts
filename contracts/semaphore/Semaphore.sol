@@ -22,7 +22,7 @@ abstract contract Semaphore is ISemaphore, SemaphoreInternal {
         _beforeVerifyProof(groupId, signal, nullifierHash, externalNullifier, proof);
 
         _verifyProof(groupId, signal, nullifierHash, externalNullifier, proof);
-        
+
         emit ProofVerified(groupId, signal);
 
         _afterVerifyProof(groupId, signal, nullifierHash, externalNullifier, proof);

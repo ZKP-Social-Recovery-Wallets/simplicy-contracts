@@ -10,9 +10,18 @@ import {SemaphoreStorage} from "../semaphore/SemaphoreStorage.sol";
 contract SemaphoreFacet is Semaphore, OwnableInternal {
     using SemaphoreStorage for SemaphoreStorage.Layout;
 
-    function init(Verifier[] memory _verifiers) public onlyOwner{
+    /**
+     * @notice return the current version of SemaphoreFacet
+     */
+    function semaphoreFacetFacetVersion() public pure returns (string memory) {
+        return "0.0.1";
+    }
+
+    function setVerifiers(Verifier[] memory _verifiers) public onlyOwner {
         for (uint8 i = 0; i < _verifiers.length; i++) {
-            SemaphoreStorage.layout().verifiers[_verifiers[i].merkleTreeDepth] = IVerifier(_verifiers[i].contractAddress);
+            SemaphoreStorage.layout().verifiers[
+                _verifiers[i].merkleTreeDepth
+            ] = IVerifier(_verifiers[i].contractAddress);
         }
     }
 }

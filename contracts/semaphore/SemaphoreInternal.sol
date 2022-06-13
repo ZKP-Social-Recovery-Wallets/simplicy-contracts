@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
 import {IVerifier} from "../interfaces/IVerifier.sol";
 import {ISemaphoreInternal} from "./ISemaphoreInternal.sol";
 import {SemaphoreStorage} from "./SemaphoreStorage.sol";
+import {SemaphoreCoreBaseStorage} from "./base/SemaphoreCoreBase/SemaphoreCoreBaseStorage.sol";
 import {SemaphoreCoreBaseInternal} from "./base/SemaphoreCoreBase/SemaphoreCoreBaseInternal.sol";
 import {IncrementalBinaryTreeStorage} from "../IncrementalBinaryTree/IncrementalBinaryTreeStorage.sol";
 
@@ -13,6 +14,7 @@ import {IncrementalBinaryTreeStorage} from "../IncrementalBinaryTree/Incremental
  */
 abstract contract SemaphoreInternal is ISemaphoreInternal, SemaphoreCoreBaseInternal {
     using SemaphoreStorage for SemaphoreStorage.Layout;
+    using SemaphoreCoreBaseStorage for SemaphoreCoreBaseStorage.Layout;
     using IncrementalBinaryTreeStorage for IncrementalBinaryTreeStorage.Layout;
 
     function _verifyProof(
@@ -29,7 +31,9 @@ abstract contract SemaphoreInternal is ISemaphoreInternal, SemaphoreCoreBaseInte
         IVerifier verifier = SemaphoreStorage.layout().verifiers[depth];
 
         _verifyProof(signal, root, nullifierHash, externalNullifier, proof, verifier);
-        
+
+        // Prevent double-voting
+        SemaphoreCoreBaseStorage.layout().saveNullifierHash(nullifierHash);
     }
 
     /**

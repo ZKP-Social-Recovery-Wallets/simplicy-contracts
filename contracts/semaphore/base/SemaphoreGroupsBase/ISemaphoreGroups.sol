@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.4;
 
-import {ISemaphoreGroupsInternal} from "./ISemaphoreGroupsInternal.sol";
+import {ISemaphoreGroupsBase} from "./ISemaphoreGroupsBase.sol";
 
 /**
  * @title SemaphoreGroups interface
  */
-interface ISemaphoreGroups is ISemaphoreGroupsInternal {
+interface ISemaphoreGroups is ISemaphoreGroupsBase {
     /**
      * @notice query the last root hash of a group
      * @param groupId: Id of the group

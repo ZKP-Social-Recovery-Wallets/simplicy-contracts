@@ -2,10 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { createMerkleTree } from "@semaphore-protocol/proof";
 import { expect } from "chai";
 import { ethers, run } from "hardhat";
-import {
-  SimplicyWalletDiamond,
-  SimplicyWalletDiamond__factory,
-} from "@solidstate/typechain-types";
+import { SimplicyWalletDiamond } from "@solidstate/typechain-types";
 import { createIdentityCommitments } from "../utils";
 
 describe("SemaphoreGroupsFacet", function () {
@@ -30,28 +27,31 @@ describe("SemaphoreGroupsFacet", function () {
   beforeEach(async function () {
     const [deployer] = await ethers.getSigners();
     this.deployer = deployer;
-    diamond = await new SimplicyWalletDiamond__factory(deployer).deploy();
+    diamond = await run("deploy:diamond", {
+      name: "SimplicyWalletDiamond",
+      logs: false,
+    });
 
     const facets = await diamond.callStatic["facets()"]();
 
     expect(facets).to.have.lengthOf(1);
 
-    this.libary = await run("deploy:poseidonT3", {
+    const poseidonT3 = await run("deploy:poseidonT3", {
       logs: false,
     });
 
-    this.facet = await run("deploy:SemaphoreGroupsFacet", {
-      library: this.libary.address,
+    const semaphoreGroupsFacet = await run("deploy:semaphoreGroupsFacet", {
+      library: poseidonT3.address,
       logs: false,
     });
 
     facetCuts = [
       {
-        target: this.facet.address,
+        target: semaphoreGroupsFacet.address,
         action: 0,
-        selectors: Object.keys(this.facet.interface.functions).map((fn) =>
-          this.facet.interface.getSighash(fn)
-        ),
+        selectors: Object.keys(
+          semaphoreGroupsFacet.contract.interface.functions
+        ).map((fn) => semaphoreGroupsFacet.contract.interface.getSighash(fn)),
       },
     ];
 
@@ -69,6 +69,7 @@ describe("SemaphoreGroupsFacet", function () {
   describe("::SimplicyWalletDiamond", function () {
     it("can call functions through diamond address", async function () {
       expect(await diamond.owner()).to.equal(this.deployer.address);
+      expect(await diamond.version()).to.equal("0.0.1");
     });
   });
   describe("::SemaphoreGroupsFacet", function () {

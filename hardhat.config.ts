@@ -4,17 +4,18 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
-import fs from "fs";
 import "hardhat-abi-exporter";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
 import "hardhat-spdx-license-identifier";
-import path from "path";
 import "solidity-coverage";
 import "./tasks/accounts";
+import "./tasks/deploy-diamond";
+import "./tasks/deploy-walletFactory-diamond";
 import "./tasks/deploy-poseidonT3";
-import "./tasks/deploy-SemaphoreGroupsFacet";
 import "./tasks/deploy-semaphore";
+import "./tasks/deploy-semaphoreGroupsFacet";
+import "./tasks/deploy-semaphoreVotingFacet";
 import "./tasks/deploy-facets";
 import "./tasks/deploy-verifier";
 
@@ -66,20 +67,30 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
+    hardhat: {},
     localhost: {
       url: "http://localhost:8545",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: [
+        process.env.PRIVATE_KEY as string,
+        process.env.ALICE_PRIVATE_KEY as string,
+        process.env.BOB_PRIVATE_KEY as string,
+      ],
     },
     harmonyTestnet: {
       url: process.env.HARMONY_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: [
+        process.env.PRIVATE_KEY as string,
+        process.env.ALICE_PRIVATE_KEY as string,
+        process.env.BOB_PRIVATE_KEY as string,
+      ],
     },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: [
+        process.env.PRIVATE_KEY as string,
+        process.env.ALICE_PRIVATE_KEY as string,
+        process.env.BOB_PRIVATE_KEY as string,
+      ],
     },
   },
 
