@@ -6,8 +6,9 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "declaration": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": ["node_modules/@types", "types"]
   },
-  "include": ["./tasks", "./test", "./typechain-types"],
+  "include": ["scripts/**/*", "tasks/**/*", "test/**/*", "./typechain-types", "types/**/*"],
   "files": ["./hardhat.config.ts"]
 }

@@ -26,4 +26,34 @@ contract IncrementalBinaryTreeTest is Test, IIncrementalBinaryTreeInternal {
         // The event we get
         incrementalBinaryTreeMock.createTree(treeId, depth, zero);
     }
+
+    function testInsertLeaf(
+       uint256 treeId, uint256 leaf
+    ) public {
+        vm.assume(leaf < SNARK_SCALAR_FIELD);
+        // Check topic 1 and topic 2, data and indexed topic for the next event
+        vm.expectEmit(true, true, true, true);
+        // The event we expect
+        emit LeafInserted(treeId, leaf);
+        incrementalBinaryTreeMock.insertLeaf(treeId, leaf);
+    }
+
+    // function testRemoveLeaf(
+    //     uint256 treeId,
+    //     uint256 leaf,
+    //     uint256[] calldata proofSiblings,
+    //     uint8[] calldata proofPathIndices
+    // ) public { 
+    //     vm.assume(leaf < SNARK_SCALAR_FIELD);
+    //     uint256 depth = incrementalBinaryTreeMock.getDepth(treeId);
+    //     vm.assume(proofSiblings.length == depth);
+    //     vm.assume(proofPathIndices.length == depth);
+
+    //     uint256 root = incrementalBinaryTreeMock.getRoot(treeId);
+    //     // Check topic 1 and topic 2, data and indexed topic for the next event
+    //     vm.expectEmit(true, true, true, true);
+    //     // The event we expect
+    //     emit LeafRemoved(treeId, leaf, root);
+    //     incrementalBinaryTreeMock.removeLeaf(treeId, leaf, proofSiblings, proofPathIndices);
+    // }
 }

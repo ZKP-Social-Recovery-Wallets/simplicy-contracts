@@ -7,6 +7,6 @@ pragma solidity ^0.8.14;
  */
 interface IIncrementalBinaryTreeInternal {
     event TreeCreated(uint256 indexed treeId, uint8 depth);
-    event LeafInserted(uint256 indexed treeId, uint256 leaf, uint256 root);
+    event LeafInserted(uint256 indexed treeId, uint256 leaf);
     event LeafRemoved(uint256 indexed treeId, uint256 leaf, uint256 root);
 }
