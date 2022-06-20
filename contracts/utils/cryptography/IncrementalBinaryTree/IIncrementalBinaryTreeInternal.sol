@@ -3,7 +3,7 @@
 pragma solidity ^0.8.4;
 
 /**
- * @title Partial Semaphore interface needed by internal functions
+ * @title Partial IncrementalBinaryTree interface needed by internal functions
  */
 interface IIncrementalBinaryTreeInternal {
     event TreeCreated(uint256 id, uint8 depth);

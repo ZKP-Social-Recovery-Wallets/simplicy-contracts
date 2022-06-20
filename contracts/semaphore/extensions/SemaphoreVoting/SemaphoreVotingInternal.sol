@@ -68,4 +68,24 @@ abstract contract SemaphoreVotingInternal is ISemaphoreVotingInternal, Semaphore
 
         emit VoteAdded(pollId, vote);
     }
+
+    /**
+     * @notice hook that is called before createPool
+     */
+    function _beforeCreatePool(
+        uint256 pollId,
+        address coordinator,
+        uint8 depth
+    ) internal view virtual {
+        require(coordinator != address(0), "SemaphoreVoting: coordinator is the zero address");
+    }
+
+    /**
+     * @notice hook that is called after createPool
+     */
+    function _afterCreatePool(
+        uint256 pollId,
+        address coordinator,
+        uint8 depth
+    ) internal view virtual {}
 }

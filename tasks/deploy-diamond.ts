@@ -12,7 +12,6 @@ task("deploy:diamond", "Deploy diamond contract")
   .addParam("name", "Diamond name", undefined, types.string)
   .setAction(async ({ logs, account, name }, { ethers }): Promise<Contract> => {
     const [deployer, aliceWallet, bobWallet] = await ethers.getSigners();
-    logs && console.log("account input:", account);
 
     let deployerAccount;
     if (account === "alice") {

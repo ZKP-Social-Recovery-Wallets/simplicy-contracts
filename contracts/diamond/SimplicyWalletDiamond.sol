@@ -3,20 +3,20 @@
 pragma solidity ^0.8.4;
 
 import {OwnableStorage} from "@solidstate/contracts/access/ownable/Ownable.sol";
-import {SolidStateDiamond} from "@solidstate/contracts/proxy/diamond/SolidStateDiamond.sol";
 
+import {SolidStateDiamond} from "@solidstate/contracts/proxy/diamond/SolidStateDiamond.sol";
 import {ISimplicyWalletDiamond} from "./ISimplicyWalletDiamond.sol";
 import {Semaphore} from "../semaphore/Semaphore.sol";
 
 contract SimplicyWalletDiamond is ISimplicyWalletDiamond, SolidStateDiamond {
     using OwnableStorage for OwnableStorage.Layout;
 
-    function changeOwner(address _owner)
+    function changeOwner(address owner_)
         external
         override(ISimplicyWalletDiamond)
         onlyOwner
     {
-        OwnableStorage.layout().setOwner(_owner);
+        OwnableStorage.layout().setOwner(owner_);
     }
 
     /**

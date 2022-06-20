@@ -18,20 +18,4 @@ library SemaphoreStorage {
             l.slot := slot
         }
     }
-
-    // function setVerifierAddress(
-    //     Layout storage s,
-    //     uint8 index,
-    //     address verifierContractAddress
-    // ) internal {
-    //     s.verifiers[index].contractAddress = verifierContractAddress;
-    // }
-
-    // function setVerifierMerkleTreeDepth(
-    //     Layout storage s,
-    //     uint8 index,
-    //     uint8 verifierMerkleTreeDepth
-    // ) internal {
-    //     s.verifiers[index].merkleTreeDepth = verifierMerkleTreeDepth;
-    // }
 }

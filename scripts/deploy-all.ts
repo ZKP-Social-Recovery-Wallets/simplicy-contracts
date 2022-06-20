@@ -38,6 +38,7 @@ async function main() {
 
   // Deploy diamond for Alice.
   const alice = await run("deploy:diamond", {
+    name: "SimplicyWalletDiamond",
     account: "alice",
     logs: true,
   });
@@ -48,6 +49,7 @@ async function main() {
 
   // Deploy diamond for Bob.
   const bob = await run("deploy:diamond", {
+    name: "SimplicyWalletDiamond",
     account: "bob",
     logs: true,
   });
@@ -65,7 +67,7 @@ async function main() {
   const poseidonT3Address = address;
 
   // Deploy SemaphoreGroupsFacet.
-  const semaphoreGroupsFacet = await run("deploy-semaphoreGroupsFacet", {
+  const semaphoreGroupsFacet = await run("deploy:semaphoreGroupsFacet", {
     library: poseidonT3Address,
     logs: true,
   });

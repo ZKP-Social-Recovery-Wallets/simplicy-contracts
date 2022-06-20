@@ -25,16 +25,19 @@ type Verifier = {
   merkleTreeDepth: number;
 };
 
-describe.only("SemaphoreFacet", function () {
+describe("SemaphoreVotingFacet", function () {
   let owner: SignerWithAddress;
+  let nonOwner: SignerWithAddress;
   let diamond: SimplicyWalletDiamond;
   let instance: any;
   let groupInstance: any;
+  let votingInstance: any;
   let facetCuts: any[] = [];
   let walletFacets: any[];
 
   const depth = Number(process.env.TREE_DEPTH);
   const groupId = 1;
+  const poolId = 1;
   const tree = createTree(20); // create a tree with 20 leaves
   const members = createIdentityCommitments(3);
   let verifierAddress: string;
@@ -43,7 +46,7 @@ describe.only("SemaphoreFacet", function () {
   const zkeyFilePath = `${config.paths.build["snark-artifacts"]}/semaphore.zkey`;
 
   before(async function () {
-    [owner] = await ethers.getSigners();
+    [owner, nonOwner] = await ethers.getSigners();
   });
 
   beforeEach(async function () {
@@ -77,7 +80,7 @@ describe.only("SemaphoreFacet", function () {
     );
 
     walletFacets = await run("deploy:facets", {
-      facets: [{ name: "SemaphoreFacet" }],
+      facets: [{ name: "SemaphoreFacet" }, { name: "SemaphoreVotingFacet" }],
       logs: false,
     });
 
@@ -88,6 +91,13 @@ describe.only("SemaphoreFacet", function () {
         selectors: Object.keys(
           walletFacets[0].contract.interface.functions
         ).map((fn) => walletFacets[0].contract.interface.getSighash(fn)),
+      },
+      {
+        target: walletFacets[1].address,
+        action: 0,
+        selectors: Object.keys(
+          walletFacets[1].contract.interface.functions
+        ).map((fn) => walletFacets[1].contract.interface.getSighash(fn)),
       },
       {
         target: semaphoreGroupsFacet.address,
@@ -109,67 +119,54 @@ describe.only("SemaphoreFacet", function () {
       "SemaphoreGroupsFacet",
       diamond.address
     );
+
+    votingInstance = await ethers.getContractAt(
+      "SemaphoreVotingFacet",
+      diamond.address
+    );
   });
 
   describe("::SimplicyWalletDiamond", function () {
     it("can call functions through diamond address", async function () {
       expect(await diamond.owner()).to.equal(this.deployer.address);
       expect(await diamond.version()).to.equal("0.0.1");
+      expect(await votingInstance.semaphoreVotingFacetVersion()).to.equal(
+        "0.0.1"
+      );
     });
   });
-  describe("::SemaphoreFacet", function () {
-    describe("#verifyProof", function () {
-      const signal = "Hello world";
-      const bytes32Signal = utils.formatBytes32String(signal);
-      const identity = new Identity("0");
-      const identityCommitment = identity.generateCommitment();
-      const merkleProof = createMerkleProof(
-        depth,
-        BigInt(0),
-        members,
-        identityCommitment
-      );
-      const witness = Semaphore.genWitness(
-        identity.getTrapdoor(),
-        identity.getNullifier(),
-        merkleProof,
-        merkleProof.root,
-        signal
-      );
-
-      let fullProof: SemaphoreFullProof;
-      let solidityProof: SemaphoreSolidityProof;
-
-      this.beforeEach(async function () {
-        const verifiers: Verifier[] = [
-          { merkleTreeDepth: depth, contractAddress: verifierAddress },
-        ];
-        await instance.connect(this.deployer).setVerifiers(verifiers);
-        await groupInstance
-          .connect(this.deployer)
-          .createGroup(groupId, depth, 0, owner.address);
-
-        await groupInstance.connect(owner).addMembers(groupId, members);
-
-        fullProof = await Semaphore.genProof(
-          witness,
-          wasmFilePath,
-          zkeyFilePath
-        );
-        solidityProof = Semaphore.packToSolidityProof(fullProof.proof);
-      });
-      it("should verify the proof", async function () {
-        const transaction = await instance.verifyProof(
-          groupId,
-          bytes32Signal,
-          fullProof.publicSignals.nullifierHash,
-          fullProof.publicSignals.merkleRoot,
-          solidityProof
+  describe("::SemaphoreVotingFacet", function () {
+    describe("#createPoll", function () {
+      it("should able to create a new poll", async function () {
+        const transaction = await votingInstance.createPoll(
+          poolId,
+          this.deployer.address,
+          depth
         );
 
         await expect(transaction)
-          .to.emit(instance, "ProofVerified")
-          .withArgs(groupId, bytes32Signal);
+          .to.emit(votingInstance, "PollCreated")
+          .withArgs(poolId, this.deployer.address);
+      });
+      describe("reverts if", function () {
+        it("zero address", async function () {
+          await expect(
+            votingInstance.createPoll(
+              poolId,
+              ethers.constants.AddressZero,
+              depth
+            )
+          ).to.be.revertedWith(
+            "SemaphoreVoting: coordinator is the zero address"
+          );
+        });
+        it("non owner", async function () {
+          await expect(
+            votingInstance
+              .connect(nonOwner)
+              .createPoll(poolId, ethers.constants.AddressZero, depth)
+          ).to.be.revertedWith("Ownable: sender must be owner");
+        });
       });
     });
   });

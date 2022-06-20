@@ -13,7 +13,7 @@ import {IWalletFactoryInternal} from "./IWalletFactoryInternal.sol";
 import {WalletFactoryStorage} from "./WalletFactoryStorage.sol";
 
 import {ISemaphore} from "../../semaphore/ISemaphore.sol";
-import {ISemaphoreGroups} from "../../semaphore/base/SemaphoreGroupsBase/ISemaphoreGroups.sol";
+import {ISemaphoreGroups} from "../../semaphore/ISemaphoreGroups.sol";
 import {ISemaphoreVoting} from "../../semaphore/extensions/SemaphoreVoting/ISemaphoreVoting.sol";
 
 /**

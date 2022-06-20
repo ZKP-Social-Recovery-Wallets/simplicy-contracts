@@ -88,6 +88,16 @@ describe("SemaphoreGroupsFacet", function () {
           .withArgs(1, "0x", owner.address);
       });
       describe("reverts if", function () {
+        it("zero address", async function () {
+          await expect(
+            instance.createGroup(
+              groupId,
+              depth,
+              0,
+              ethers.constants.AddressZero
+            )
+          ).to.be.revertedWith("SemaphoreGroups: admin is the zero address");
+        });
         it("non-owner", async function () {
           await expect(
             instance

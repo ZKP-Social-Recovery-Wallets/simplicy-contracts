@@ -9,16 +9,15 @@ import { createMerkleProof } from "@semaphore-protocol/proof";
 import { expect } from "chai";
 import { utils } from "ethers";
 import { ethers, run } from "hardhat";
-import {
-  SimplicyWalletDiamond,
-  SimplicyWalletDiamond__factory,
-} from "@solidstate/typechain-types";
+import { Contract } from "ethers";
+import { SimplicyWalletDiamond } from "@solidstate/typechain-types";
 import { config } from "../../package.json";
 import { createTree, createIdentityCommitments } from "../utils";
 
-type Facets = {
+type DeployedContract = {
   name: string;
-  args?: any[];
+  contract: Contract;
+  address: string;
 };
 
 type Verifier = {
@@ -32,6 +31,7 @@ describe("SemaphoreFacet", function () {
   let instance: any;
   let groupInstance: any;
   let facetCuts: any[] = [];
+  let walletFacets: any[];
 
   const depth = Number(process.env.TREE_DEPTH);
   const groupId = 1;
@@ -49,7 +49,10 @@ describe("SemaphoreFacet", function () {
   beforeEach(async function () {
     const [deployer] = await ethers.getSigners();
     this.deployer = deployer;
-    diamond = await new SimplicyWalletDiamond__factory(deployer).deploy();
+    diamond = await run("deploy:diamond", {
+      name: "SimplicyWalletDiamond",
+      logs: false,
+    });
 
     const facets = await diamond.callStatic["facets()"]();
 
@@ -61,17 +64,37 @@ describe("SemaphoreFacet", function () {
 
     verifierAddress = this.verifier.address;
 
-    this.semaphore = await run("deploy:semaphore", {
+    const poseidonT3 = await run("deploy:poseidonT3", {
+      logs: false,
+    });
+
+    const semaphoreGroupsFacet: DeployedContract = await run(
+      "deploy:semaphoreGroupsFacet",
+      {
+        library: poseidonT3.address,
+        logs: false,
+      }
+    );
+
+    walletFacets = await run("deploy:facets", {
+      facets: [{ name: "SemaphoreFacet" }],
       logs: false,
     });
 
     facetCuts = [
       {
-        target: this.semaphore.address,
+        target: walletFacets[0].address,
         action: 0,
-        selectors: Object.keys(this.semaphore.interface.functions).map((fn) =>
-          this.semaphore.interface.getSighash(fn)
-        ),
+        selectors: Object.keys(
+          walletFacets[0].contract.interface.functions
+        ).map((fn) => walletFacets[0].contract.interface.getSighash(fn)),
+      },
+      {
+        target: semaphoreGroupsFacet.address,
+        action: 0,
+        selectors: Object.keys(
+          semaphoreGroupsFacet.contract.interface.functions
+        ).map((fn) => semaphoreGroupsFacet.contract.interface.getSighash(fn)),
       },
     ];
 
@@ -82,30 +105,6 @@ describe("SemaphoreFacet", function () {
 
     instance = await ethers.getContractAt("SemaphoreFacet", diamond.address);
 
-    this.libary = await run("deploy:poseidonT3", {
-      logs: false,
-    });
-
-    this.groupFacet = await run("deploy:semaphoreGroupsFacet", {
-      library: this.libary.address,
-      logs: true,
-    });
-
-    facetCuts = [
-      {
-        target: this.groupFacet.address,
-        action: 0,
-        selectors: Object.keys(this.groupFacet.interface.functions).map((fn) =>
-          this.groupFacet.interface.getSighash(fn)
-        ),
-      },
-    ];
-
-    //do the cut
-    await diamond
-      .connect(deployer)
-      .diamondCut(facetCuts, ethers.constants.AddressZero, "0x");
-
     groupInstance = await ethers.getContractAt(
       "SemaphoreGroupsFacet",
       diamond.address
@@ -115,6 +114,7 @@ describe("SemaphoreFacet", function () {
   describe("::SimplicyWalletDiamond", function () {
     it("can call functions through diamond address", async function () {
       expect(await diamond.owner()).to.equal(this.deployer.address);
+      expect(await diamond.version()).to.equal("0.0.1");
     });
   });
   describe("::SemaphoreFacet", function () {
@@ -144,7 +144,7 @@ describe("SemaphoreFacet", function () {
         const verifiers: Verifier[] = [
           { merkleTreeDepth: depth, contractAddress: verifierAddress },
         ];
-        await instance.connect(this.deployer).init(verifiers);
+        await instance.connect(this.deployer).setVerifiers(verifiers);
         await groupInstance
           .connect(this.deployer)
           .createGroup(groupId, depth, 0, owner.address);
