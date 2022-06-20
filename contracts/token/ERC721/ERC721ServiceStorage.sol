@@ -3,9 +3,18 @@
 pragma solidity ^0.8.4;
 
 library ERC721ServiceStorage {
+    enum Error {
+        None,
+        RevertWithMessage,
+        RevertWithoutMessage,
+        Panic
+    }
+
     struct Layout {
         mapping(address => uint256) erc721TokenIndex;
         address[] erc721Tokens;
+        bytes4 retval;
+        Error error;
     }
 
     bytes32 internal constant STORAGE_SLOT =
