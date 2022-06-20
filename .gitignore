@@ -1,2 +1,25 @@
+node_modules/
+
+# ignore lockfiles of constituent packages but not root lockfile
+yarn.lock
+!./yarn.lock
+
+yarn-error.log
+lerna-debug.log
+
+typechain-types/
+dist/
+
+artifacts/
 cache/
+
+coverage/
+coverage.json
+
+.env
+
+cache/
+cache_hardhat
 out/
+
+deployed-contracts/undefined.json
