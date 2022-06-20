@@ -18,6 +18,13 @@ abstract contract ERC721ServiceInternal {
     function _getERC721TokenIndex(address tokenAddress) internal view returns (uint256) {
         return ERC721ServiceStorage.layout().erc721TokenIndex[tokenAddress];
     }
+
+     /**
+     * @notice query all tracked ERC721 tokens
+     */
+    function _getAllTrackedERC721Tokens() internal view returns (address[] memory) {
+        return ERC721ServiceStorage.layout().erc721Tokens;
+    }
    
     /**
      * @notice register a new ERC721 token
@@ -34,6 +41,28 @@ abstract contract ERC721ServiceInternal {
     function _removeERC721(address tokenAddress) internal virtual {
         ERC721ServiceStorage.layout().removeErc721Token(tokenAddress);
     }
+
+    /**
+     * @notice hook that is called before transferERC721
+     */
+    function _beforeTransferERC721(address token, address to, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
+    /**
+     * @notice hook that is called after transferERC721
+     */
+    function _afterTransferERC721(address token, address to, uint256 tokenId) internal virtual view {}
+
+
+    /**
+     * @notice hook that is called before approveERC721
+     */
+    function _beforeApproveERC721(address token, address spender, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
+    /**
+     * @notice hook that is called after approveERC721
+     */
+    function _afterApproveERC721(address token, address spender, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
 
     /**
      * @notice hook that is called before registerERC721
