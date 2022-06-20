@@ -3,10 +3,8 @@
 pragma solidity ^0.8.4;
 
 /**
- * @title SimplicyWalletDiamond interface
+ * @title WalletFactoryDiamond interface
  */
-interface ISimplicyWalletDiamond {
+interface IWalletFactoryDiamond {
     function version() external view returns (string memory);
-
-    function changeOwner(address _owner) external;
 }

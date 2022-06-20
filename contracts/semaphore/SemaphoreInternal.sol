@@ -7,7 +7,7 @@ import {ISemaphoreInternal} from "./ISemaphoreInternal.sol";
 import {SemaphoreStorage} from "./SemaphoreStorage.sol";
 import {SemaphoreCoreBaseStorage} from "./base/SemaphoreCoreBase/SemaphoreCoreBaseStorage.sol";
 import {SemaphoreCoreBaseInternal} from "./base/SemaphoreCoreBase/SemaphoreCoreBaseInternal.sol";
-import {IncrementalBinaryTreeStorage} from "../IncrementalBinaryTree/IncrementalBinaryTreeStorage.sol";
+import {IncrementalBinaryTreeStorage} from "../utils/cryptography/IncrementalBinaryTree/IncrementalBinaryTreeStorage.sol";
 
 /**
  * @title Base SemaphoreGroups internal functions, excluding optional extensions

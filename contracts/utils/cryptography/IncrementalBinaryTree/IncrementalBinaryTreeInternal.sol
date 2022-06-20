@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.4;
 
-import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "../semaphore/base/SemaphoreConstants.sol";
-import {PoseidonT3} from "../libraries/Hashes.sol";
+import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "../../SemaphoreConstants.sol";
+import {PoseidonT3} from "../Hashes.sol";
 import {IIncrementalBinaryTreeInternal} from "./IIncrementalBinaryTreeInternal.sol";
 import {IncrementalBinaryTreeStorage} from "./IncrementalBinaryTreeStorage.sol";
 
 /**
- * @title Base SemaphoreGroups internal functions, excluding optional extensions
+ * @title Base IncrementalBinaryTree internal functions, excluding optional extensions
  */
 abstract contract IncrementalBinaryTreeInternal is IIncrementalBinaryTreeInternal {
     using IncrementalBinaryTreeStorage for IncrementalBinaryTreeStorage.Layout;

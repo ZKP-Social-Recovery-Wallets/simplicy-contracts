@@ -17,7 +17,11 @@ abstract contract SemaphoreVoting is ISemaphoreVoting, SemaphoreVotingInternal {
         address coordinator,
         uint8 depth
     ) external override {
+        _beforeCreatePool(pollId, coordinator, depth);
+
         _createPoll(pollId, coordinator, depth);
+
+        _afterCreatePool(pollId, coordinator, depth);
     }
 
     function startPoll(uint256 pollId, uint256 encryptionKey)

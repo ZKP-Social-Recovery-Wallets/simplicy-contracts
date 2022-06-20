@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import {ISemaphoreGroupsBase} from "./ISemaphoreGroupsBase.sol";
+import {ISemaphoreGroupsBase} from "./base/SemaphoreGroupsBase/ISemaphoreGroupsBase.sol";
 
 /**
  * @title SemaphoreGroups interface

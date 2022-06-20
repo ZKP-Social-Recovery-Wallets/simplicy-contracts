@@ -35,19 +35,11 @@ describe("WalletFactoryFacet", function () {
   beforeEach(async function () {
     const [deployer] = await ethers.getSigners();
     this.deployer = deployer;
-    walletDiamond = await run("deploy:diamond", {
-      name: "SimplicyWalletDiamond",
-      logs: false,
-    });
 
     factoryDiamond = await run("deploy:diamond", {
       name: "WalletFactoryDiamond",
       logs: false,
     });
-
-    facets = await walletDiamond.callStatic["facets()"]();
-
-    expect(facets).to.have.lengthOf(1);
 
     // this.verifier = await run("deploy:verifier", {
     //   logs: false,
@@ -112,6 +104,23 @@ describe("WalletFactoryFacet", function () {
         ).map((fn) => semaphoreGroupsFacet.contract.interface.getSighash(fn)),
       },
     ];
+
+    walletDiamond = await run("deploy:diamond", {
+      name: "SimplicyWalletDiamond",
+      args: [
+        walletFacets[0].address,
+        semaphoreGroupsFacet.address,
+        "1",
+        "16",
+        ethers.constants.AddressZero,
+        this.deployer.address,
+      ],
+      logs: false,
+    });
+
+    facets = await walletDiamond.callStatic["facets()"]();
+
+    expect(facets).to.have.lengthOf(1);
 
     //do the cut
     await factoryDiamond
@@ -219,8 +228,6 @@ describe("WalletFactoryFacet", function () {
           );
         });
         it("should able call function", async function () {
-          //console.log(this.deployer.address);
-          console.log("instance.address", instance.address);
           expect(await this.newWalletInstance.owner()).to.equal(owner.address);
           expect(await this.newWalletInstance.version()).to.equal("0.0.1");
         });

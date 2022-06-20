@@ -11,10 +11,11 @@ library WalletFactoryStorage {
         string version;
     }
     struct Layout {
-        address diamond;
         mapping(bytes32 => bytes32) guardians;
         mapping(bytes32 => address) wallets;
         mapping(string => Facet) facets;
+        mapping(address => uint256) indexOfErc721Token;
+        address diamond;
     }
 
     bytes32 internal constant STORAGE_SLOT =

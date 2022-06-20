@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.4;
 
-import {SNARK_SCALAR_FIELD} from "../SemaphoreConstants.sol";
 import {ISemaphoreGroupsInternal} from "./ISemaphoreGroupsInternal.sol";
 import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
-import {IncrementalBinaryTreeInternal} from "../../../IncrementalBinaryTree/IncrementalBinaryTreeInternal.sol";
+import {SNARK_SCALAR_FIELD} from "../../../utils/SemaphoreConstants.sol";
+import {IncrementalBinaryTreeInternal} from "../../../utils/cryptography/IncrementalBinaryTree/IncrementalBinaryTreeInternal.sol";
 
 /**
  * @title Base SemaphoreGroups internal functions, excluding optional extensions
@@ -101,7 +101,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
             _getDepth(groupId) == 0,
             "SemaphoreGroups: group already exists"
         );
-        require(admin != address(0), "admin is the zero address");
+        require(admin != address(0), "SemaphoreGroups: admin is the zero address");
     }
 
     /**
@@ -113,6 +113,16 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
         uint256 zeroValue,
         address admin
     ) internal view virtual {}
+
+    /**
+     * @notice hook that is called before updateGroupAdmin
+     */
+    function _beforeUpdateGroupAdmin(uint256 groupId, address newAdmin) internal view virtual {}
+
+    /**
+     * @notice hook that is called after updateGroupAdmin
+     */
+    function _afterUpdateGroupAdmin(uint256 groupId, address newAdmin) internal view virtual {}
 
     /**
      * @notice hook that is called before addMembers
@@ -138,7 +148,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     /**
      * @notice hook that is called before removeMember
      */
-    function _beforeRemoveMembers(
+    function _beforeRemoveMember(
         uint256 groupId,
         uint256 identityCommitment,
         uint256[] calldata proofSiblings,

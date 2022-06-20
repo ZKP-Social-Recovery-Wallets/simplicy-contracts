@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import {ISemaphoreGroups} from "./ISemaphoreGroups.sol";
+import {ISemaphoreGroups} from "../../ISemaphoreGroups.sol";
 import {SemaphoreGroupsBaseInternal} from "./SemaphoreGroupsBaseInternal.sol";
 import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
 
@@ -35,17 +35,19 @@ abstract contract SemaphoreGroupsBase is
     function updateGroupAdmin(uint256 groupId, address newAdmin)
         external
         override
-        onlyGroupAdmin(groupId)
     {
+        _beforeUpdateGroupAdmin(groupId, newAdmin);
+
         _setGroupAdmin(groupId, newAdmin);
 
         emit GroupAdminUpdated(groupId, msg.sender, newAdmin);
+
+        _afterUpdateGroupAdmin(groupId, newAdmin);
     }
 
     function addMembers(uint256 groupId, uint256[] memory identityCommitments)
         external
         override
-        onlyGroupAdmin(groupId)
     {
         _beforeAddMembers(groupId, identityCommitments);
 
@@ -61,13 +63,8 @@ abstract contract SemaphoreGroupsBase is
         uint256 identityCommitment,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
-    ) external override onlyGroupAdmin(groupId) {
-        _beforeRemoveMembers(
-            groupId,
-            identityCommitment,
-            proofSiblings,
-            proofPathIndices
-        );
+    ) external override {
+        _beforeRemoveMember(groupId, identityCommitment, proofSiblings, proofPathIndices);
 
         _removeMember(
             groupId,
