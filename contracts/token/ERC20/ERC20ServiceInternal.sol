@@ -37,7 +37,7 @@ abstract contract ERC20ServiceInternal is IERC20ServiceInternal {
      * @param tokenAddress: the address of the ERC721 token
      */
     function _registerERC20(address tokenAddress) internal virtual {
-        ERC20ServiceStorage.layout().addErc20Token(tokenAddress);
+        ERC20ServiceStorage.layout().storeERC20(tokenAddress);
 
         emit ERC20TokenTracked(tokenAddress);
     }
@@ -47,7 +47,7 @@ abstract contract ERC20ServiceInternal is IERC20ServiceInternal {
      * @param tokenAddress: the address of the ERC20 token
      */
     function _removeERC20(address tokenAddress) internal virtual {
-        ERC20ServiceStorage.layout().removeErc20Token(tokenAddress);
+        ERC20ServiceStorage.layout().deleteERC20(tokenAddress);
 
         emit ERC20TokenRemoved(tokenAddress);
     }

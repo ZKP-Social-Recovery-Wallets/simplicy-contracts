@@ -2,8 +2,13 @@
 
 pragma solidity ^0.8.4;
 
+
+/**
+ * @title Semaphoregroups Storage base on Diamond Standard Layout storage pattern
+ */
 library SemaphoreGroupsBaseStorage {
     struct Layout {
+        // groupId -> admin
         mapping(uint256 => address) groupAdmins;
     }
 

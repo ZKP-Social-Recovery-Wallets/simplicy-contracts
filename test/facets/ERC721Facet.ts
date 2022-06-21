@@ -7,7 +7,7 @@ import {
   SimplicyWalletDiamond,
 } from "@solidstate/typechain-types";
 
-describe.only("ERC721Facet", function () {
+describe("ERC721Facet", function () {
   let owner: SignerWithAddress;
   let nonOwner: SignerWithAddress;
   let receiver: SignerWithAddress;

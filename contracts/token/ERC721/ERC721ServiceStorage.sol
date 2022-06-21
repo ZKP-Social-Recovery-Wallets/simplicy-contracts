@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.4;
 
+/**
+ * @title ERC721Service Storage base on Diamond Standard Layout storage pattern
+ */
 library ERC721ServiceStorage {
     enum Error {
         None,
@@ -28,10 +31,10 @@ library ERC721ServiceStorage {
     }
 
     /**
-     * @notice add an ERC721 token
+     * @notice add an ERC721 token to the storage
      * @param tokenAddress: the address of the ERC721 token
      */
-    function addErc721Token(Layout storage s, address tokenAddress)
+    function storeERC721(Layout storage s, address tokenAddress)
         internal {
             uint256 arrayIndex = s.erc721Tokens.length;
             uint256 index = arrayIndex + 1;
@@ -40,14 +43,20 @@ library ERC721ServiceStorage {
     }
 
     /**
-     * @notice remove an ERC721 token
+     * @notice delete an ERC721 token from the storage,
+     * we are going to switch the last item in the array with the one we are replacing.
+     * That way when we pop, we are removing the correct item. 
+     *
+     * There are two cases we need to handle:
+     *  - the address we are removing is not the last address in the array
+     *  - or it is the last address in the array. 
      * @param tokenAddress: the address of the ERC20 token
      */
-    function removeErc721Token(Layout storage s, address tokenAddress)
+    function deleteERC721(Layout storage s, address tokenAddress)
         internal {
             uint256 index = s.erc721TokenIndex[tokenAddress];
             uint256 arrayIndex = index - 1;
-            require(arrayIndex >= 0, "ERC721Service: array out-of-bounds");
+            require(arrayIndex >= 0, "ERC721_NOT_EXISTS");
             if(arrayIndex != s.erc721Tokens.length - 1) {
                  s.erc721Tokens[arrayIndex] = s.erc721Tokens[s.erc721Tokens.length - 1];
                  s.erc721TokenIndex[s.erc721Tokens[arrayIndex]] = index;

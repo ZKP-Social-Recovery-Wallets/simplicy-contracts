@@ -1,27 +1,40 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { createMerkleTree } from "@semaphore-protocol/proof";
 import { expect } from "chai";
 import { ethers, run } from "hardhat";
-import { SimplicyWalletDiamond } from "@solidstate/typechain-types";
+import {
+  ISemaphoreGroupsBase,
+  SimplicyWalletDiamond,
+} from "@solidstate/typechain-types";
 import { createIdentityCommitments } from "../utils";
+import { describeBehaviorOfSemaphoreGroupsBase } from "@simplicy/spec";
+import { BigNumber } from "ethers";
 
-describe("SemaphoreGroupsFacet", function () {
+const groupId: BigNumber = ethers.constants.One;
+const nonExistingGroupId: BigNumber = ethers.constants.Two;
+const depth: Number = Number(process.env.TREE_DEPTH);
+const zero: BigNumber = ethers.constants.Zero;
+const members: bigint[] = createIdentityCommitments(3);
+
+describe.only("SemaphoreGroupsFacet", function () {
   let owner: SignerWithAddress;
-  let getNomineeOwner: SignerWithAddress;
-  let getNonOwner: SignerWithAddress;
+  let nomineeOwner: SignerWithAddress;
+  let nonOwner: SignerWithAddress;
   let groupAdmin: SignerWithAddress;
   let nonGroupAdmin: SignerWithAddress;
+  let anotherGroupAdmin: SignerWithAddress;
   let diamond: SimplicyWalletDiamond;
-  let instance: any;
+  let instance: any | ISemaphoreGroupsBase;
   let facetCuts: any[] = [];
 
-  const depth = Number(process.env.TREE_DEPTH);
-  const groupId = 1;
-  const members = createIdentityCommitments(3);
-
   before(async function () {
-    [owner, getNomineeOwner, getNonOwner, groupAdmin, nonGroupAdmin] =
-      await ethers.getSigners();
+    [
+      owner,
+      nomineeOwner,
+      nonOwner,
+      groupAdmin,
+      nonGroupAdmin,
+      anotherGroupAdmin,
+    ] = await ethers.getSigners();
   });
 
   beforeEach(async function () {
@@ -72,144 +85,53 @@ describe("SemaphoreGroupsFacet", function () {
       expect(await diamond.version()).to.equal("0.0.1");
     });
   });
-  describe("::SemaphoreGroupsFacet", function () {
-    describe("#createGroup", function () {
-      it("should create group", async function () {
-        const transaction = await instance
-          .connect(this.deployer)
-          .createGroup(groupId, depth, 0, owner.address);
-
-        expect(transaction)
-          .to.emit(instance, "GroupCreated")
-          .withArgs(1, 20, 0);
-
-        expect(transaction)
-          .to.emit(instance, "GroupAdminUpdated")
-          .withArgs(1, "0x", owner.address);
-      });
-      describe("reverts if", function () {
-        it("zero address", async function () {
-          await expect(
-            instance.createGroup(
+  describeBehaviorOfSemaphoreGroupsBase(async () => instance, {
+    getOwner: async () => owner,
+    getNonOwner: async () => nonOwner,
+    getGroupAdmin: async () => groupAdmin,
+    getNonGroupAdmin: async () => nonGroupAdmin,
+    getAnotherGroupAdmin: async () => anotherGroupAdmin,
+    getGroupId: async () => groupId,
+    getNonExistingGroupId: async () => nonExistingGroupId,
+    getDepth: async () => depth,
+    getZero: async () => zero,
+    getMembers: async () => members,
+    creategroup: (
+      groupId: BigNumber,
+      depth: Number,
+      zeroValue: BigNumber,
+      address: string
+    ) => instance.createGroup(groupId, depth, zeroValue, address),
+    updateGroupAdmin: (groupId: BigNumber, address: string) =>
+      instance.updateGroupAdmin(groupId, address),
+    addMembers: (groupId: BigNumber, identityCommitments: BigNumber[]) =>
+      instance.addMembers(groupId, identityCommitments),
+    removeMember: (
+      groupId: BigNumber,
+      identityCommitment: string,
+      proofSiblings: BigNumber[],
+      proofPathIndices: number[]
+    ) =>
+      instance.removeMember(
+        groupId,
+        identityCommitment,
+        proofSiblings,
+        proofPathIndices
+      ),
+  });
+  describe("#createGroup(uint256,uint8,uint256,address)", function () {
+    describe("reverts if", function () {
+      it("non-owner", async function () {
+        await expect(
+          instance
+            .connect(nonOwner)
+            ["createGroup(uint256,uint8,uint256,address)"](
               groupId,
               depth,
-              0,
-              ethers.constants.AddressZero
+              zero,
+              groupAdmin.address
             )
-          ).to.be.revertedWith("SemaphoreGroups: admin is the zero address");
-        });
-        it("non-owner", async function () {
-          await expect(
-            instance
-              .connect(getNonOwner)
-              .createGroup(groupId, depth, 0, owner.address)
-          ).to.be.revertedWith("Ownable: sender must be owner");
-        });
-      });
-    });
-    describe("#updateGroupAdmin", function () {
-      beforeEach(async function () {
-        await instance
-          .connect(this.deployer)
-          .createGroup(groupId, depth, 0, owner.address);
-      });
-      it("should update the group admin", async () => {
-        const transaction = instance
-          .connect(owner)
-          .updateGroupAdmin(groupId, groupAdmin.address);
-
-        await expect(transaction)
-          .to.emit(instance, "GroupAdminUpdated")
-          .withArgs(groupId, owner.address, groupAdmin.address);
-      });
-      describe("reverts if", function () {
-        it("the caller is not the group admin", async function () {
-          await expect(
-            instance
-              .connect(nonGroupAdmin)
-              .updateGroupAdmin(groupId, groupAdmin.address)
-          ).to.be.revertedWith("SemaphoreGroup: caller is not the group admin");
-        });
-      });
-    });
-    describe("#addMember", () => {
-      beforeEach(async function () {
-        const transaction = await instance
-          .connect(this.deployer)
-          .createGroup(groupId, depth, 0, groupAdmin.address);
-
-        expect(transaction)
-          .to.emit(instance, "GroupAdminUpdated")
-          .withArgs(1, "0x", groupAdmin.address);
-      });
-      it("should add a new member in an existing group", async () => {
-        // TODO: how to check the root?
-        // const tree = createMerkleTree(depth, BigInt(0), members);
-        // tree.delete(0);
-        // // const { siblings, pathIndices, root } = tree.createProof(0);
-        // console.log("tree", tree);
-
-        const transaction = await instance
-          .connect(groupAdmin)
-          .addMembers(groupId, members);
-        for (let i = 0; i < members.length; i++) {
-          const root = [
-            "18951329906296061785889394467312334959162736293275411745101070722914184798221",
-            "18265569239387019447615006583056890113282443686370447449782395427262311533264",
-            "10984560832658664796615188769057321951156990771630419931317114687214058410144",
-          ];
-          await expect(transaction)
-            .to.emit(instance, "MemberAdded")
-            .withArgs(groupId, members[i], root[i]);
-        }
-      });
-      describe("reverts if", function () {
-        it("the caller is not the group admin", async function () {
-          await expect(
-            instance.connect(nonGroupAdmin).addMembers(groupId, members)
-          ).to.be.revertedWith("SemaphoreGroup: caller is not the group admin");
-        });
-      });
-    });
-    describe("#removeMember", () => {
-      it("Should remove a member from an existing group", async () => {
-        const groupId = 100;
-        const tree = createMerkleTree(depth, BigInt(0), [
-          BigInt(1),
-          BigInt(2),
-          BigInt(3),
-        ]);
-
-        tree.delete(0);
-
-        await instance
-          .connect(owner)
-          .createGroup(groupId, depth, 0, groupAdmin.address);
-        await instance
-          .connect(groupAdmin)
-          .addMembers(groupId, [BigInt(1), BigInt(2), BigInt(3)]);
-        const { siblings, pathIndices, root } = tree.createProof(0);
-
-        const transaction = await instance.connect(groupAdmin).removeMember(
-          groupId,
-          BigInt(1),
-          siblings.map((s: any) => s[0]),
-          pathIndices
-        );
-        await expect(transaction)
-          .to.emit(instance, "MemberRemoved")
-          .withArgs(groupId, BigInt(1), root);
-      });
-      describe("reverts if", function () {
-        it("the member if the caller is not the group admin", async () => {
-          const transaction = instance
-            .connect(nonGroupAdmin)
-            .removeMember(groupId, members[0], [0, 1], [0, 1]);
-
-          await expect(transaction).to.be.revertedWith(
-            "SemaphoreGroup: caller is not the group admin"
-          );
-        });
+        ).to.be.revertedWith("Ownable: sender must be owner");
       });
     });
   });

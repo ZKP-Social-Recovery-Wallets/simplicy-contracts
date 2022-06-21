@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import {ISemaphoreGroups} from "../../ISemaphoreGroups.sol";
+import {ISemaphoreGroups, ISemaphoreGroupsBase} from "../../ISemaphoreGroups.sol";
 import {SemaphoreGroupsBaseInternal} from "./SemaphoreGroupsBaseInternal.sol";
 import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
 
@@ -15,6 +15,9 @@ abstract contract SemaphoreGroupsBase is
 {
     using SemaphoreGroupsBaseStorage for SemaphoreGroupsBaseStorage.Layout;
 
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
     function createGroup(
         uint256 groupId,
         uint8 depth,
@@ -32,6 +35,9 @@ abstract contract SemaphoreGroupsBase is
         _afterCreateGroup(groupId, depth, zeroValue, admin);
     }
 
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
     function updateGroupAdmin(uint256 groupId, address newAdmin)
         external
         override
@@ -45,6 +51,9 @@ abstract contract SemaphoreGroupsBase is
         _afterUpdateGroupAdmin(groupId, newAdmin);
     }
 
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
     function addMembers(uint256 groupId, uint256[] memory identityCommitments)
         external
         override
@@ -52,12 +61,15 @@ abstract contract SemaphoreGroupsBase is
         _beforeAddMembers(groupId, identityCommitments);
 
         for (uint256 i; i < identityCommitments.length; i++) {
-            _addMember(groupId, identityCommitments[i]);
+            addMember(groupId, identityCommitments[i]);
         }
 
         _afterAddMembers(groupId, identityCommitments);
     }
 
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
     function removeMember(
         uint256 groupId,
         uint256 identityCommitment,
@@ -120,12 +132,30 @@ abstract contract SemaphoreGroupsBase is
         return _getNumberOfLeaves(groupId);
     }
 
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
     function getGroupAdmin(uint256 groupId)
         public
         view
         virtual
+        override
         returns (address)
     {
         return _getGroupAdmin(groupId);
+    }
+
+    /**
+     * @inheritdoc ISemaphoreGroupsBase
+     */
+    function addMember(uint256 groupId, uint256 identityCommitment)
+        public
+        override
+    {
+        _beforeAddMember(groupId, identityCommitment);
+
+        _addMember(groupId, identityCommitment);
+
+        _afterAddMember(groupId, identityCommitment);
     }
 }

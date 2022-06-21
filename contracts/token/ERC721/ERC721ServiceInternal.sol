@@ -32,7 +32,7 @@ abstract contract ERC721ServiceInternal is IERC721ServiceInternal {
      * @param tokenAddress: the address of the ERC721 token
      */
     function _registerERC721(address tokenAddress) internal virtual {
-        ERC721ServiceStorage.layout().addErc721Token(tokenAddress);
+        ERC721ServiceStorage.layout().storeERC721(tokenAddress);
 
         emit ERC721TokenTracked(tokenAddress);
     }
@@ -42,7 +42,7 @@ abstract contract ERC721ServiceInternal is IERC721ServiceInternal {
      * @param tokenAddress: the address of the ERC721 token
      */
     function _removeERC721(address tokenAddress) internal virtual {
-        ERC721ServiceStorage.layout().removeErc721Token(tokenAddress);
+        ERC721ServiceStorage.layout().deleteERC721(tokenAddress);
 
         emit ERC721TokenRemoved(tokenAddress);
     }

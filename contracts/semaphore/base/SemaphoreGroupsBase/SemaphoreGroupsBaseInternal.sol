@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 
 import {ISemaphoreGroupsInternal} from "./ISemaphoreGroupsInternal.sol";
 import {SemaphoreGroupsBaseStorage} from "./SemaphoreGroupsBaseStorage.sol";
-import {SNARK_SCALAR_FIELD} from "../../../utils/SemaphoreConstants.sol";
+import {SNARK_SCALAR_FIELD} from "../../../utils/Constants.sol";
 import {IncrementalBinaryTreeInternal} from "../../../utils/cryptography/IncrementalBinaryTree/IncrementalBinaryTreeInternal.sol";
 
 /**
@@ -16,11 +16,25 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     modifier onlyGroupAdmin(uint256 groupId) {
         require(
             _getGroupAdmin(groupId) == msg.sender,
-            "SemaphoreGroup: caller is not the group admin"
+            "SemaphoreGroupsBase: SENDER_NON_GROUP_ADMIN"
         );
         _;
     }
 
+    modifier isScalarField(uint256 scalar) {
+        require(scalar < SNARK_SCALAR_FIELD, "SCALAR_OUT_OF_BOUNDS");
+        _;
+    }
+
+    modifier groupExists(uint256 groupId) {
+        require(_getDepth(groupId) != 0, "SemaphoreGroupsBase: GROUP_ID_NOT_EXIST");
+        _;
+    }
+
+    /**
+     * @notice internal query query a groupAdmin.
+     * @param groupId: the groupId of the group.
+     */
     function _getGroupAdmin(uint256 groupId)
         internal
         view
@@ -31,7 +45,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     }
 
     /**
-     * @notice creates a new group by initializing the associated tree
+     * @notice internal function creates a new group by initializing the associated tree
      * @param groupId: group id of the group
      * @param depth: depth of the tree
      * @param zeroValue: zero value of the tree
@@ -51,7 +65,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     }
 
     /**
-     * @notice adds an identity commitment to an existing group
+     * @notice  internal function adds an identity commitment to an existing group
      * @param groupId: group id of the group
      * @param identityCommitment: New identity commitment
      */
@@ -67,7 +81,7 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     }
 
     /**
-     * @notice removes an identity commitment from an existing group. A proof of membership is
+     * @notice  internal function removes an identity commitment from an existing group. A proof of membership is
      * needed to check if the node to be deleted is part of the tree
      * @param groupId: group id of the group
      * @param identityCommitment: New identity commitment
@@ -95,13 +109,12 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
         uint8 depth,
         uint256 zeroValue,
         address admin
-    ) internal view virtual {
-        require(groupId < SNARK_SCALAR_FIELD, "SemaphoreGroups: group id must be < SNARK_SCALAR_FIELD");
+    ) internal view virtual isScalarField(groupId) {
         require(
             _getDepth(groupId) == 0,
-            "SemaphoreGroups: group already exists"
+            "SemaphoreGroupsBase: GROUP_ID_EXISTS"
         );
-        require(admin != address(0), "SemaphoreGroups: admin is the zero address");
+        require(admin != address(0), "SemaphoreGroupsBase: ADMIN_ZERO_ADDRESS");
     }
 
     /**
@@ -117,7 +130,14 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     /**
      * @notice hook that is called before updateGroupAdmin
      */
-    function _beforeUpdateGroupAdmin(uint256 groupId, address newAdmin) internal view virtual {}
+    function _beforeUpdateGroupAdmin(
+        uint256 groupId,
+        address newAdmin
+    ) 
+        internal view virtual 
+        groupExists(groupId)
+        onlyGroupAdmin(groupId)
+    {}
 
     /**
      * @notice hook that is called after updateGroupAdmin
@@ -130,12 +150,10 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     function _beforeAddMembers(
         uint256 groupId,
         uint256[] memory identityCommitments
-    ) internal view virtual {
-         require(
-            _getDepth(groupId) != 0,
-            "SemaphoreGroups: group does not exist"
-        );
-    }
+    ) 
+        internal view virtual
+        groupExists(groupId) 
+        onlyGroupAdmin(groupId) {}
 
     /**
      * @notice hook that is called after addMembers
@@ -146,6 +164,27 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
     ) internal view virtual {}
 
     /**
+     * @notice hook that is called before addMember
+     */
+    function _beforeAddMember(
+        uint256 groupId,
+        uint256 identityCommitment
+    ) 
+        internal view virtual
+        groupExists(groupId)
+        onlyGroupAdmin(groupId)
+    {}
+
+     /**
+     * @notice hook that is called before addMember
+     */
+    function _afterAddMember(
+        uint256 groupId,
+        uint256 identityCommitment
+    ) internal view virtual {}
+
+
+    /**
      * @notice hook that is called before removeMember
      */
     function _beforeRemoveMember(
@@ -153,12 +192,11 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
         uint256 identityCommitment,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
-    ) internal view virtual {
-        require(
-            _getDepth(groupId) != 0,
-            "SemaphoreGroups: group does not exist"
-        );
-    }
+    ) 
+        internal view virtual 
+        groupExists(groupId) 
+        onlyGroupAdmin(groupId)
+    {}
 
     /**
      * @notice hook that is called after removeMember
@@ -169,4 +207,27 @@ abstract contract SemaphoreGroupsBaseInternal is ISemaphoreGroupsInternal, Incre
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) internal view virtual {}
+
+    /**
+     * @notice hook that is called before removeMembers
+     */
+    function _beforeRemoveMembers(
+        uint256 groupId,
+        RemoveMembersDTO[] calldata members
+    ) 
+        internal view virtual
+        groupExists(groupId) 
+        onlyGroupAdmin(groupId)
+    {
+        require(members.length > 0, "SemaphoreGroupsBase: NO_MEMBER_TO_REMOVE");
+    }
+
+    /**
+     * @notice hook that is called after removeMembers
+     */
+    function _afterRemoveMembers(
+        uint256 groupId,
+        RemoveMembersDTO[] calldata members
+    ) internal view virtual groupExists(groupId) {}
+
 }
