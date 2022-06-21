@@ -2,12 +2,13 @@
 
 pragma solidity ^0.8.4;
 
+import {IERC721ServiceInternal} from "./IERC721ServiceInternal.sol";
 import {ERC721ServiceStorage} from "./ERC721ServiceStorage.sol";
 
 /**
  * @title ERC721Service internal functions, excluding optional extensions
  */
-abstract contract ERC721ServiceInternal {
+abstract contract ERC721ServiceInternal is IERC721ServiceInternal {
     using ERC721ServiceStorage for ERC721ServiceStorage.Layout;
 
     modifier erc721IsTracked(address tokenAddress) {
@@ -32,6 +33,8 @@ abstract contract ERC721ServiceInternal {
      */
     function _registerERC721(address tokenAddress) internal virtual {
         ERC721ServiceStorage.layout().addErc721Token(tokenAddress);
+
+        emit ERC721TokenTracked(tokenAddress);
     }
 
      /**
@@ -40,6 +43,8 @@ abstract contract ERC721ServiceInternal {
      */
     function _removeERC721(address tokenAddress) internal virtual {
         ERC721ServiceStorage.layout().removeErc721Token(tokenAddress);
+
+        emit ERC721TokenRemoved(tokenAddress);
     }
 
     /**
