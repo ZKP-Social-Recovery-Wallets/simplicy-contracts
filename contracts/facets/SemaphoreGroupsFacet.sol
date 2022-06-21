@@ -22,27 +22,4 @@ contract SemaphoreGroupsFacet is SemaphoreGroupsBase, OwnableInternal {
     ) internal view virtual override onlyOwner {
         super._beforeCreateGroup(groupId, depth, zeroValue, admin);
     }
-
-    function _beforeUpdateGroupAdmin(
-        uint256 groupId,
-        address newAdmin
-    ) internal view virtual override onlyGroupAdmin(groupId) {
-        super._beforeUpdateGroupAdmin(groupId, newAdmin);
-    }
-
-    function _beforeAddMembers(
-        uint256 groupId,
-        uint256[] memory identityCommitments
-    ) internal view virtual override onlyGroupAdmin(groupId) {
-        super._beforeAddMembers(groupId, identityCommitments);
-    }
-
-    function _beforeRemoveMember(
-        uint256 groupId,
-        uint256 identityCommitment,
-        uint256[] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
-    ) internal view virtual override onlyGroupAdmin(groupId) {
-        super._beforeRemoveMember(groupId, identityCommitment,proofSiblings,proofPathIndices);
-    }
 }

@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.4;
 
+/**
+ * @title  ERC1155Service Storage base on Diamond Standard Layout storage pattern
+ */
 library ERC1155ServiceStorage {
     struct Layout {
         mapping(address => uint256) erc1155TokenIndex;
@@ -18,11 +21,11 @@ library ERC1155ServiceStorage {
         }
     }
 
-     /**
-     * @notice add an ERC1155 token
+    /**
+     * @notice add an ERC1155 token to the storage
      * @param tokenAddress: the address of the ERC1155 token
      */
-    function addErc1155Token(Layout storage s, address tokenAddress)
+    function storeERC1155(Layout storage s, address tokenAddress)
         internal {
             uint256 arrayIndex = s.erc1155Tokens.length;
             uint256 index = arrayIndex + 1;
@@ -30,7 +33,17 @@ library ERC1155ServiceStorage {
             s.erc1155TokenIndex[tokenAddress] = index;
     }
 
-    function removeErc1155Token(Layout storage s, address tokenAddress)
+    /**
+     * @notice delete an ERC1155 token from the storage,
+     * we are going to switch the last item in the array with the one we are replacing.
+     * That way when we pop, we are removing the correct item. 
+     *
+     * There are two cases we need to handle:
+     *  - the address we are removing is not the last address in the array
+     *  - or it is the last address in the array. 
+     * @param tokenAddress: the address of the ERC1155 token
+     */
+    function deleteERC1155(Layout storage s, address tokenAddress)
         internal {
             uint256 index = s.erc1155TokenIndex[tokenAddress];
             uint256 arrayIndex = index - 1;

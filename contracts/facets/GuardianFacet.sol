@@ -2,14 +2,15 @@
 
 pragma solidity ^0.8.4;
 
-import {SemaphoreInternal} from "../semaphore/SemaphoreInternal.sol";
+import {OwnableInternal} from "@solidstate/contracts/access/ownable/OwnableInternal.sol";
+import {Guardian} from "../guardian/Guardian.sol";
+import {GuardianStorage} from "../guardian/GuardianStorage.sol";
 
-contract GuardianFacet is SemaphoreInternal{
-    function recover(uint256 groupId,
-        bytes32 signal,
-        uint256 nullifierHash,
-        uint256 externalNullifier,
-        uint256[8] calldata proof) external {
-        
+contract GuardianFacet is Guardian, OwnableInternal {
+    /**
+     * @notice return the current version of GuardianFacet
+     */
+    function guardianFacetVersion() public pure returns (string memory) {
+        return "0.0.1";
     }
 }

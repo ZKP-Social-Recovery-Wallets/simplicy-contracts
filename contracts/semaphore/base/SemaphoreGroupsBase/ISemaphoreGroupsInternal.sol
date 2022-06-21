@@ -6,6 +6,12 @@ pragma solidity ^0.8.4;
  * @title Partial SemaphoreGroups interface needed by internal functions
  */
 interface ISemaphoreGroupsInternal {
+    struct RemoveMembersDTO {
+        uint256 identityCommitment;
+        uint256[] proofSiblings;
+        uint8[] proofPathIndices;
+    }
+
     /**
      * @notice emitted when a new group is created
      * @param groupId: group id of the group

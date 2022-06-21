@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "../../SemaphoreConstants.sol";
+import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "../../Constants.sol";
 import {PoseidonT3} from "../Hashes.sol";
 import {IIncrementalBinaryTreeInternal} from "./IIncrementalBinaryTreeInternal.sol";
 import {IncrementalBinaryTreeStorage} from "./IncrementalBinaryTreeStorage.sol";

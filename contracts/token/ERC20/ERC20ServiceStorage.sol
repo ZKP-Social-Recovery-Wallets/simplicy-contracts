@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.4;
 
+/**
+ * @title ERC20Service Storage base on Diamond Standard Layout storage pattern
+ */
 library ERC20ServiceStorage {
     struct Layout {
         mapping(address => uint256) erc20TokenIndex;
@@ -18,11 +21,11 @@ library ERC20ServiceStorage {
         }
     }
 
-     /**
-     * @notice add an ERC20 token
+    /**
+     * @notice add an ERC20 token to the storage
      * @param tokenAddress: the address of the ERC20 token
      */
-    function addErc20Token(Layout storage s, address tokenAddress)
+    function storeERC20(Layout storage s, address tokenAddress)
         internal {
             uint256 arrayIndex = s.erc20Tokens.length;
             uint256 index = arrayIndex + 1;
@@ -30,11 +33,21 @@ library ERC20ServiceStorage {
             s.erc20TokenIndex[tokenAddress] = index;
     }
 
-    function removeErc20Token(Layout storage s, address tokenAddress)
+    /**
+     * @notice delete an ERC20 token from the storage,
+     * we are going to switch the last item in the array with the one we are replacing.
+     * That way when we pop, we are removing the correct item. 
+     *
+     * There are two cases we need to handle:
+     *  - the address we are removing is not the last address in the array
+     *  - or it is the last address in the array. 
+     * @param tokenAddress: the address of the ERC20 token
+     */
+    function deleteERC20(Layout storage s, address tokenAddress)
         internal {
             uint256 index = s.erc20TokenIndex[tokenAddress];
             uint256 arrayIndex = index - 1;
-            require(arrayIndex >= 0, "ERC20Service: array out-of-bounds");
+            require(arrayIndex >= 0, "ERC20_NOT_EXISTS");
             if(arrayIndex != s.erc20Tokens.length - 1) {
                  s.erc20Tokens[arrayIndex] = s.erc20Tokens[s.erc20Tokens.length - 1];
                  s.erc20TokenIndex[s.erc20Tokens[arrayIndex]] = index;
