@@ -1837,7 +1837,15 @@
     "@sentry/types" "5.30.0"
     tslib "^1.9.3"
 
+"@simplicy/contracts@link:contracts":
+  version "0.0.0"
+  uid ""
+
 "@simplicy/spec@link:spec":
+  version "0.0.0"
+  uid ""
+
+"@simplicy/typechain-types@link:typechain-types":
   version "0.0.0"
   uid ""
 
@@ -1876,10 +1884,6 @@
   integrity sha512-6r0d+4IdgRjQdhpm/hrKGigxsq3q3eZOu36KzMZMIqznqPy1bGmSH+GsJJoLTiYv+gziQIvaPXO4DbZjPME+XA==
   dependencies:
     "@solidstate/library" "^0.0.35"
-
-"@solidstate/typechain-types@link:typechain-types":
-  version "0.0.0"
-  uid ""
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"

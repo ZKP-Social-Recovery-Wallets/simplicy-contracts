@@ -140,7 +140,7 @@ describe("SemaphoreFacet", function () {
       let fullProof: SemaphoreFullProof;
       let solidityProof: SemaphoreSolidityProof;
 
-      this.beforeEach(async function () {
+      beforeEach(async function () {
         const verifiers: Verifier[] = [
           { merkleTreeDepth: depth, contractAddress: verifierAddress },
         ];

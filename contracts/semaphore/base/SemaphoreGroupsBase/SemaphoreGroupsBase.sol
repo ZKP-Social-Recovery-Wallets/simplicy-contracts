@@ -55,7 +55,7 @@ abstract contract SemaphoreGroupsBase is
      * @inheritdoc ISemaphoreGroupsBase
      */
     function addMembers(uint256 groupId, uint256[] memory identityCommitments)
-        external
+        public
         override
     {
         _beforeAddMembers(groupId, identityCommitments);

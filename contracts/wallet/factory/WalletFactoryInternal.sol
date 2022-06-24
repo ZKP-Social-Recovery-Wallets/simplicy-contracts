@@ -161,9 +161,6 @@ abstract contract WalletFactoryInternal is IWalletFactoryInternal {
 
         emit NewDiamondWallet(deployed);
 
-        // change ownership to owner
-        ISimplicyWalletDiamond(deployed).changeOwner(owner);
-
         return deployed;
     }
 
