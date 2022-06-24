@@ -6,33 +6,35 @@ import {SafeCast} from "@solidstate/contracts/utils/SafeCast.sol";
 
 import {IGuardianInternal} from "./IGuardianInternal.sol";
 import {GuardianStorage} from "./GuardianStorage.sol";
-import {SemaphoreGroupsBaseInternal} from "../semaphore/base/SemaphoreGroupsBase/SemaphoreGroupsBaseInternal.sol";
-import {MIN_GUARDIANS, MAX_GUARDIANS} from "../utils/Constants.sol";
+import {MIN_GUARDIANS, MAX_GUARDIANS, GUARDIAN_PENDING_PERIODS} from "../utils/Constants.sol";
 
 
 /**
  * @title Guardian internal functions, excluding optional extensions
  */
-abstract contract GuardianInternal is IGuardianInternal, SemaphoreGroupsBaseInternal {
+abstract contract GuardianInternal is IGuardianInternal {
     using GuardianStorage for GuardianStorage.Layout;
     using SafeCast for uint;
 
     modifier isGuardian(uint256 hashId, bool includePendingAddition) {
+        require(hashId != 0, "Guardian: GUARDIAN_HASH_ID_IS_ZERO");
+
         uint guardianIndex = _getGuardianIndex(hashId);
-        uint arrayIndex = guardianIndex - 1;
         require(guardianIndex > 0, "Guardian: GUARDIAN_NOT_FOUND");
+
+        uint arrayIndex = guardianIndex - 1;
 
         GuardianStorage.Guardian memory g = _getGuardian(arrayIndex);
         require(_isActiveOrPendingAddition(g, includePendingAddition), "Guardian: GUARDIAN_NOT_ACTIVE");
         _;
     }
 
-    modifier isMinGuardian(AddGuardianDTO[] calldata guardians) {
+    modifier isMinGuardian(GuardianDTO[] calldata guardians) {
         require(guardians.length >= MIN_GUARDIANS, "Guardian: MIN_GUARDIANS_NOT_MET");
         _;
     }
 
-    modifier isMaxGuardian(AddGuardianDTO[] calldata guardians) {
+    modifier isMaxGuardian(GuardianDTO[] calldata guardians) {
         require(guardians.length <= MAX_GUARDIANS, "Guardian: MAX_GUARDIANS_EXCEEDED");
         _;
     }
@@ -55,16 +57,13 @@ abstract contract GuardianInternal is IGuardianInternal, SemaphoreGroupsBaseInte
 
     /**
      * @notice internal function query all guardians from the storage
-     * @param groupId: Id of the group.
+     * @param includePendingAddition: whether to include pending addition guardians.
      */
-    function _getGuardians(uint256 groupId, bool includePendingAddition) internal view virtual returns (GuardianStorage.Guardian[] memory) {
-        // TODO: isScalarField require(groupId < SNARK_SCALAR_FIELD, "GROUP_ID_OUT_OF_RANGE");
-        require(_getDepth(groupId) != 0, "Guardian: GROUP_ID_NOT_EXIST");
-
+    function _getGuardians(bool includePendingAddition) internal view virtual returns (GuardianStorage.Guardian[] memory) {
         GuardianStorage.Guardian[] memory guardians = new GuardianStorage.Guardian[](GuardianStorage.layout().guardians.length);
         uint index = 0;
         for(uint i = 0; i < GuardianStorage.layout().guardians.length; i++) {
-            GuardianStorage.Guardian memory g = GuardianStorage.layout().guardians[i];
+            GuardianStorage.Guardian memory g = GuardianStorage.layout().guardians[i];           
             if (_isActiveOrPendingAddition(g, includePendingAddition)) {
                 guardians[index] = g;
                 index++;
@@ -76,10 +75,10 @@ abstract contract GuardianInternal is IGuardianInternal, SemaphoreGroupsBaseInte
 
     /**
      * @notice internal function query the length of the active guardians
-     * @param groupId: Id of the group.
+     * @param includePendingAddition: whether to include pending addition guardians.
      */
-    function _numGuardians(uint256 groupId, bool includePendingAddition) internal view virtual returns (uint count) {
-        GuardianStorage.Guardian[] memory guardians = _getGuardians(groupId, includePendingAddition);
+    function _numGuardians(bool includePendingAddition) internal view virtual returns (uint count) {
+        GuardianStorage.Guardian[] memory guardians = _getGuardians(includePendingAddition);
         for(uint i = 0; i < guardians.length; i++) {
             GuardianStorage.Guardian memory g = guardians[i];
             if (_isActiveOrPendingAddition(g, includePendingAddition)) {
@@ -88,28 +87,49 @@ abstract contract GuardianInternal is IGuardianInternal, SemaphoreGroupsBaseInte
         }
     }
 
+     function _requireMajority(GuardianDTO[] calldata signers) internal view virtual returns (bool) {
+        // We always need at least one signer
+        if (signers.length == 0) {
+            return false;
+        }
+        
+        uint256 lastSigner;
+        // Calculate total group sizes
+        GuardianStorage.Guardian[] memory allGuardians = _getGuardians(false);
+        require(allGuardians.length > 0, "NO_GUARDIANS");
+        for (uint i = 0; i < signers.length; i++) {
+            // Check for duplicates
+            require(signers[i].hashId > lastSigner, "INVALID_SIGNERS_ORDER");
+            lastSigner = signers[i].hashId;
+
+            bool _isGuardian = false;
+            for (uint j = 0; j < allGuardians.length; j++) {
+                if (allGuardians[j].hashId == signers[i].hashId) {
+                    _isGuardian = true;
+                    break;
+                    
+                }
+            }
+            require(_isGuardian, "SIGNER_NOT_GUARDIAN");
+        }
+        uint numExtendedSigners = allGuardians.length;
+        return signers.length >= (numExtendedSigners >> 1) + 1;
+    }
+
     /**
      * @notice internal function add a new guardian to the group.
-     * @param groupId: Id of the group.
      * @param hashId: the hashId of the guardian.
-     * @param identityCommitment: the identity commitment of the guardian.
-     * @param pendingPeriod: the pendingPeriod before a guardian is added.
      * @return returns a boolean value indicating whether the operation succeeded. 
      *
      * Emits a {GuardianAdded} event.
      */
-     function _addGuardian(
-        uint256 groupId,
-        uint256 hashId,
-        uint256 identityCommitment,
-        uint    pendingPeriod
-    ) internal virtual returns(bool) {
-        uint numGuardians = _numGuardians(groupId, true);
+     function _addGuardian(uint256 hashId) internal virtual returns(bool) {
+        uint numGuardians = _numGuardians(true);
         require(numGuardians < MAX_GUARDIANS, "Guardian: TOO_MANY_GUARDIANS");
 
         uint validSince = block.timestamp;
-        if (numGuardians >= MIN_GUARDIANS) {
-            validSince = block.timestamp + pendingPeriod;
+        if (numGuardians > MIN_GUARDIANS) {
+            validSince = block.timestamp + GUARDIAN_PENDING_PERIODS;
         }
         
         bool returned = GuardianStorage.layout().storeGuardian(hashId,validSince);
@@ -118,120 +138,78 @@ abstract contract GuardianInternal is IGuardianInternal, SemaphoreGroupsBaseInte
 
         emit GuardianAdded(hashId, validSince);
 
-        _addMember(groupId, identityCommitment);
-
         return returned;
     }
 
      /**
      * @notice internal function remove guardian from the group.
-     * @param groupId: Id of the group.
      * @param hashId: the hashId of the guardian.
-     * @param identityCommitment: the identityCommitment of the guardian.
-     * @param pendingPeriod: the pendingPeriod when the guardian is removed.
-      * @param proofSiblings: Array of the sibling nodes of the proof of membership.
-     * @param proofPathIndices: Path of the proof of membership.
      * @return returns a boolean value indicating whether the operation succeeded.
      *
      * Emits a {GuardianRemoved} event.
      */
-    function _removeGuardian(
-        uint256 groupId,
-        uint256 hashId,
-        uint256 identityCommitment,
-        uint    pendingPeriod,
-        uint256[] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
-    ) internal virtual returns(bool) {
-        uint validUntil = block.timestamp + pendingPeriod;
+    function _removeGuardian(uint256 hashId) internal virtual returns(bool) {
+        uint validUntil = block.timestamp + GUARDIAN_PENDING_PERIODS;
         uint index = _getGuardianIndex(hashId);
         uint arrayIndex = index - 1;
 
         GuardianStorage.Guardian memory g = GuardianStorage.layout().guardians[arrayIndex];
 
         validUntil = _deleteGuardian(g, validUntil);
-        _removeMember(groupId, identityCommitment, proofSiblings, proofPathIndices);
-        
-
+    
         emit GuardianRemoved(hashId, validUntil);
 
         return true;
     }
 
-    function _requireMajority(uint256 groupId, uint256 hashId) internal view virtual returns (bool) {
-        // Calculate total group sizes
-        GuardianStorage.Guardian[] memory allGuardians = _getGuardians(groupId, false);
-    }
-
     /**
      * @notice hook that is called before setInitialGuardians
      */
-    function _beforeSetInitialGuardians(
-        uint256 groupId,
-        AddGuardianDTO[] calldata guardians
-    ) 
+    function _beforeSetInitialGuardians(GuardianDTO[] calldata guardians) 
         internal 
         view
         virtual 
-        isScalarField(groupId)
         isMinGuardian(guardians) 
         isMaxGuardian(guardians) 
-    {}
+    {
+        for(uint i = 0; i < guardians.length; i++) {
+            require(guardians[i].hashId != 0, "Guardian: GUARDIAN_HASH_ID_IS_ZERO");
+            require(_getGuardianIndex(guardians[i].hashId) == 0, "Guardian: GUARDIAN_EXISTS");
+        }
+    }
 
     /**
      * @notice hook that is called after setInitialGuardians
      */
-    function _afterSetInitialGuardians(
-        uint256 groupId,
-        AddGuardianDTO[] calldata guardians
-    ) internal view virtual {}
+    function _afterSetInitialGuardians(GuardianDTO[] calldata guardians) internal view virtual {}
 
     /**
      * @notice hook that is called before addGuardian
      */
-    function _beforeAddGuardian(
-        uint256 groupId,
-        uint256 hashId,
-        uint256 identityCommitment,
-        uint256 validUntil
-    ) internal view virtual isScalarField(groupId) {
-        uint numGuardians = _numGuardians(groupId, true);
+    function _beforeAddGuardian(uint256 hashId) internal view virtual {
+        uint numGuardians = _numGuardians(true);
         require(numGuardians <= MAX_GUARDIANS, "Guardian: TOO_MANY_GUARDIANS");
     }
 
     /**
      * @notice hook that is called before removeGuardian
      */
-    function _beforeRemoveGuardian(
-        uint256 groupId,
-        uint256 hashId,
-        uint256 identityCommitment,
-        uint256 validUntil,
-        uint256[] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
-    ) 
+    function _beforeRemoveGuardian(uint256 hashId) 
         internal view virtual 
-        isScalarField(groupId) 
         isGuardian(hashId, true)
     {}
 
     /**
      * @notice hook that is called before removeGuardians
      */
-    function _beforeRemoveGuardians(
-        uint256 groupId,
-        RemoveGuardianDTO[] calldata guardians
-    ) internal view virtual isScalarField(groupId) {
+    function _beforeRemoveGuardians(GuardianDTO[] calldata guardians) internal view virtual {
         require(guardians.length > 0, "Guardian: NO_GUARDIANS_TO_REMOVE");
     }
 
     /**
      * @notice hook that is called after removeGuardians
      */
-    function _afterRemoveGuardians(
-        uint256 groupId,
-        RemoveGuardianDTO[] calldata guardians
-    ) internal view virtual  {}
+    function _afterRemoveGuardians(GuardianDTO[] calldata guardians) internal view virtual  {}
 
 
     /**

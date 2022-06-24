@@ -6,62 +6,25 @@ import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 
-type AddGuardianDTO = {
+type GuardianDTO = {
   hashId: BigNumber;
-  identityCommitment: string;
-  validUntil: number;
-};
-
-type RemoveGuardianDTO = {
-  hashId: BigNumber;
-  identityCommitment: string;
-  pendingPeriod: number;
-  proofSiblings: BigNumber[];
-  proofPathIndices: number[];
 };
 
 export interface GuardianBehaviorArgs {
   getOwner: () => Promise<SignerWithAddress>;
   getNonOwner: () => Promise<SignerWithAddress>;
-  getGroupAdmin: () => Promise<SignerWithAddress>;
-  getNonGroupAdmin: () => Promise<SignerWithAddress>;
-  getAnotherGroupAdmin: () => Promise<SignerWithAddress>;
-  getGroupId: () => Promise<BigNumber>;
-  getNonExistingGroupId: () => Promise<BigNumber>;
   getDepth: () => Promise<Number>;
   getZero: () => Promise<BigNumber>;
   getMembers: () => Promise<bigint[]>;
-  getGuardians: (
-    groupId: BigNumber,
-    includePendingAddition: boolean
-  ) => Promise<IGuardian[]>;
-  numGuardians: (
-    groupId: BigNumber,
-    includePendingAddition: boolean
-  ) => Promise<BigNumber>;
+  getGuardians: (includePendingAddition: boolean) => Promise<IGuardian[]>;
+  numGuardians: (includePendingAddition: boolean) => Promise<BigNumber>;
   setInitialGuardians: (
-    groupId: BigNumber,
-    guardians: AddGuardianDTO[]
+    guardians: GuardianDTO[]
   ) => Promise<ContractTransaction>;
-  addGuardian: (
-    groupId: BigNumber,
-    hashId: BigNumber,
-    identityCommitment: string,
-    validUntil: number
-  ) => Promise<ContractTransaction>;
-  removeGuardian: (
-    groupId: BigNumber,
-    hashId: BigNumber,
-    identityCommitment: string,
-    validUntil: Number,
-    proofSiblings: BigNumber[],
-    proofPathIndices: number[]
-  ) => Promise<ContractTransaction>;
-  removeGuardians: (
-    groupId: BigNumber,
-    guardians: RemoveGuardianDTO[]
-  ) => Promise<ContractTransaction>;
-  cancelPendingGuardians: (groupId: BigNumber) => Promise<ContractTransaction>;
+  addGuardian: (hashId: BigNumber) => Promise<ContractTransaction>;
+  removeGuardian: (hashId: BigNumber) => Promise<ContractTransaction>;
+  removeGuardians: (guardians: GuardianDTO[]) => Promise<ContractTransaction>;
+  cancelPendingGuardians: () => Promise<ContractTransaction>;
 }
 
 export function describeBehaviorOfGuardian(
@@ -69,11 +32,6 @@ export function describeBehaviorOfGuardian(
   {
     getOwner,
     getNonOwner,
-    getGroupAdmin,
-    getNonGroupAdmin,
-    getAnotherGroupAdmin,
-    getGroupId,
-    getNonExistingGroupId,
     getDepth,
     getZero,
     getMembers,
@@ -85,11 +43,6 @@ export function describeBehaviorOfGuardian(
   describe("::Guardian", function () {
     let owner: SignerWithAddress;
     let nonOwner: SignerWithAddress;
-    let groupAdmin: SignerWithAddress;
-    let nonGroupAdmin: SignerWithAddress;
-    let anotherGroupAdmin: SignerWithAddress;
-    let groupId: BigNumber;
-    let nonExistingGroupId: BigNumber;
     let depth: Number;
     let zero: BigNumber;
     let members: bigint[];
@@ -99,14 +52,290 @@ export function describeBehaviorOfGuardian(
       instance = await deploy();
       owner = await getOwner();
       nonOwner = await getNonOwner();
-      groupAdmin = await getGroupAdmin();
-      nonGroupAdmin = await getNonGroupAdmin();
-      anotherGroupAdmin = await getAnotherGroupAdmin();
-      groupId = await getGroupId();
-      nonExistingGroupId = await getNonExistingGroupId();
       depth = await getDepth();
       zero = await getZero();
       members = await getMembers();
+    });
+    describe("#getGuardian(uint256)", function () {
+      describe("#addGuardian(uint256)", function () {
+        it("should return guardian", async function () {
+          await instance["addGuardian(uint256)"](members[0]);
+          const guardian: any = await instance.callStatic[
+            "getGuardian(uint256)"
+          ](members[0]);
+          expect(guardian.hashId).to.equal(members[0]);
+          expect(guardian.status).to.equal(1);
+        });
+      });
+      describe("reverts if", function () {
+        it("no guardians added", async function () {
+          await expect(
+            instance.callStatic["getGuardian(uint256)"](members[0])
+          ).to.be.revertedWith("Guardian: GUARDIAN_NOT_FOUND");
+        });
+      });
+    });
+    describe("#getGuardians(bool)", function () {
+      it("should return empty []", async function () {
+        const guardians: any[] = [];
+        expect(await instance.callStatic["getGuardians(bool)"](true)).to.eqls(
+          guardians
+        );
+      });
+      describe("#addGuardian(uint256)", function () {
+        it("should return guardians", async function () {
+          await instance["addGuardian(uint256)"](members[0]);
+          const transaction = await instance.callStatic["getGuardians(bool)"](
+            true
+          );
+          expect(transaction.length).to.equal(1);
+          expect(transaction[0].hashId).to.equal(members[0]);
+          expect(transaction[0].status).to.equal(1);
+        });
+      });
+    });
+    describe("#numGuardians(bool)", function () {
+      it("should return 0", async function () {
+        expect(await instance.callStatic["numGuardians(bool)"](true)).to.equal(
+          0
+        );
+      });
+      describe("#addGuardian(uint256)", function () {
+        it("should return 1", async function () {
+          await instance["addGuardian(uint256)"](members[0]);
+          expect(
+            await instance.callStatic["numGuardians(bool)"](true)
+          ).to.equal(1);
+        });
+      });
+    });
+    describe("#setInitialGuardians((uint256)[])", function () {
+      it("should emits events", async function () {
+        let guardians: GuardianDTO[] = [];
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[2]) },
+        ];
+        const transaction = await instance["setInitialGuardians((uint256)[])"](
+          guardians
+        );
+
+        const receipt = await transaction.wait();
+        let events = receipt.events;
+        if (events) {
+          for (let i = 0; i < events.length; i++) {
+            const args: any = events[i].args;
+            await expect(transaction)
+              .to.emit(instance, "GuardianAdded")
+              .withArgs(members[i], args.effectiveTime);
+          }
+        }
+      });
+      describe("reverts if", function () {
+        it("below isMinGuardian", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(members[0]) },
+            { hashId: BigNumber.from(members[1]) },
+          ];
+          await expect(
+            instance["setInitialGuardians((uint256)[])"](guardians)
+          ).to.be.revertedWith("Guardian: MIN_GUARDIANS_NOT_MET");
+        });
+        it("above isMaxGuardian", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(1) },
+            { hashId: BigNumber.from(2) },
+            { hashId: BigNumber.from(3) },
+            { hashId: BigNumber.from(4) },
+            { hashId: BigNumber.from(5) },
+            { hashId: BigNumber.from(6) },
+            { hashId: BigNumber.from(7) },
+            { hashId: BigNumber.from(8) },
+            { hashId: BigNumber.from(9) },
+            { hashId: BigNumber.from(10) },
+            { hashId: BigNumber.from(11) },
+          ];
+          await expect(
+            instance["setInitialGuardians((uint256)[])"](guardians)
+          ).to.be.revertedWith("Guardian: MAX_GUARDIANS_EXCEEDED");
+        });
+        it("zero hashId", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(1) },
+            { hashId: BigNumber.from(2) },
+            { hashId: ethers.constants.Zero },
+          ];
+          await expect(
+            instance["setInitialGuardians((uint256)[])"](guardians)
+          ).to.be.revertedWith("Guardian: GUARDIAN_HASH_ID_IS_ZERO");
+        });
+        it("guardian exists", async function () {
+          await instance["addGuardian(uint256)"](members[2]);
+
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(members[0]) },
+            { hashId: BigNumber.from(members[1]) },
+            { hashId: BigNumber.from(members[2]) },
+          ];
+          await expect(
+            instance["setInitialGuardians((uint256)[])"](guardians)
+          ).to.be.revertedWith("Guardian: GUARDIAN_EXISTS");
+        });
+      });
+    });
+    describe("#removeGuardian(uint256)", function () {
+      it("should emits events", async function () {
+        let guardians: GuardianDTO[] = [];
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[2]) },
+        ];
+        await instance["setInitialGuardians((uint256)[])"](guardians);
+        const transaction = await instance["removeGuardian(uint256)"](
+          members[2]
+        );
+
+        const receipt = await transaction.wait();
+        let events = receipt.events;
+        if (events) {
+          const args: any = events[0].args;
+          await expect(transaction)
+            .to.emit(instance, "GuardianRemoved")
+            .withArgs(members[2], args.effectiveTime);
+        }
+      });
+      describe("reverts if", function () {
+        it("guardian non-exists", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(1) },
+            { hashId: BigNumber.from(2) },
+            { hashId: BigNumber.from(3) },
+          ];
+          await instance["setInitialGuardians((uint256)[])"](guardians);
+          await expect(
+            instance["removeGuardian(uint256)"](members[2])
+          ).to.be.revertedWith("Guardian: GUARDIAN_NOT_FOUND");
+        });
+        it("zero hashId", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(1) },
+            { hashId: BigNumber.from(2) },
+            { hashId: BigNumber.from(3) },
+          ];
+          await instance["setInitialGuardians((uint256)[])"](guardians);
+
+          await expect(
+            instance["removeGuardian(uint256)"](ethers.constants.Zero)
+          ).to.be.revertedWith("Guardian: GUARDIAN_HASH_ID_IS_ZERO");
+        });
+        // TODO: non-active
+      });
+    });
+    describe("#removeGuardians((uint256)[])", function () {
+      it("should emits events", async function () {
+        let guardians: GuardianDTO[] = [];
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[2]) },
+        ];
+        await instance["setInitialGuardians((uint256)[])"](guardians);
+        const transaction = await instance["removeGuardians((uint256)[])"](
+          guardians
+        );
+
+        const receipt = await transaction.wait();
+        let events = receipt.events;
+        if (events) {
+          for (let i = 0; i < events.length; i++) {
+            const args: any = events[i].args;
+            await expect(transaction)
+              .to.emit(instance, "GuardianRemoved")
+              .withArgs(members[i], args.effectiveTime);
+          }
+        }
+      });
+      it("should emits events with different order", async function () {
+        let guardians: GuardianDTO[] = [];
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[2]) },
+        ];
+        await instance["setInitialGuardians((uint256)[])"](guardians);
+        guardians = [
+          { hashId: BigNumber.from(members[2]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[0]) },
+        ];
+        const transaction = await instance["removeGuardians((uint256)[])"](
+          guardians
+        );
+
+        const receipt = await transaction.wait();
+        let events = receipt.events;
+        if (events) {
+          for (let i = 0; i < events.length; i++) {
+            const args: any = events[i].args;
+            await expect(transaction)
+              .to.emit(instance, "GuardianRemoved")
+              .withArgs(members[i], args.effectiveTime);
+          }
+        }
+      });
+      it("should emits events removed less guardian", async function () {
+        let guardians: GuardianDTO[] = [];
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+          { hashId: BigNumber.from(members[2]) },
+        ];
+        await instance["setInitialGuardians((uint256)[])"](guardians);
+        guardians = [
+          { hashId: BigNumber.from(members[0]) },
+          { hashId: BigNumber.from(members[1]) },
+        ];
+        const transaction = await instance["removeGuardians((uint256)[])"](
+          guardians
+        );
+
+        const receipt = await transaction.wait();
+        let events = receipt.events;
+        if (events) {
+          for (let i = 0; i < events.length; i++) {
+            const args: any = events[i].args;
+            await expect(transaction)
+              .to.emit(instance, "GuardianRemoved")
+              .withArgs(members[i], args.effectiveTime);
+          }
+        }
+      });
+      describe("reverts if", function () {
+        it("guardian non-exists", async function () {
+          let guardians: GuardianDTO[] = [];
+          guardians = [
+            { hashId: BigNumber.from(1) },
+            { hashId: BigNumber.from(2) },
+            { hashId: BigNumber.from(3) },
+          ];
+          await instance["setInitialGuardians((uint256)[])"](guardians);
+          guardians = [
+            { hashId: BigNumber.from(members[0]) },
+            { hashId: BigNumber.from(members[1]) },
+          ];
+          await expect(
+            instance["removeGuardians((uint256)[])"](guardians)
+          ).to.be.revertedWith("Guardian: GUARDIAN_NOT_FOUND");
+        });
+      });
     });
   });
 }

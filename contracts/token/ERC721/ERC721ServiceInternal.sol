@@ -57,6 +57,26 @@ abstract contract ERC721ServiceInternal is IERC721ServiceInternal {
      */
     function _afterTransferERC721(address token, address to, uint256 tokenId) internal virtual view {}
 
+    /**
+     * @notice hook that is called before safeTransferERC721From
+     */
+    function _beforeSafeTransferERC721From(address token, address from, address to, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
+    /**
+     * @notice hook that is called after safeTransferERC721From
+     */
+    function _afterSafeTransferERC721From(address token, address from, address to, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
+    /**
+     * @notice hook that is called before transferERC721From
+     */
+    function _beforeTransferERC721From(address token, address from, address to, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
+    /**
+     * @notice hook that is called after transferERC721From
+     */
+    function _afterTransferERC721From(address token, address from, address to, uint256 tokenId) internal virtual view erc721IsTracked(token) {}
+
 
     /**
      * @notice hook that is called before approveERC721

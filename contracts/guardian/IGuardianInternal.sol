@@ -12,18 +12,8 @@ interface IGuardianInternal {
         ADD        // Being added or added after validSince timestamp.
     }
 
-    struct AddGuardianDTO {        
+    struct GuardianDTO {        
         uint256 hashId;
-        uint256 identityCommitment;
-        uint validUntil;
-    }
-
-    struct RemoveGuardianDTO {
-        uint256 hashId;
-        uint256 identityCommitment;
-        uint pendingPeriod;
-        uint256[] proofSiblings;
-        uint8[] proofPathIndices;
     }
 
     /**

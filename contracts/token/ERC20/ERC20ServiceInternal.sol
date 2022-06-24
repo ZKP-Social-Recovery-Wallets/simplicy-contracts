@@ -58,6 +58,12 @@ abstract contract ERC20ServiceInternal is IERC20ServiceInternal {
     function _beforeTransferERC20(address token, address to, uint256 amount) internal virtual view erc20IsTracked(token) {}
 
     /**
+     * @notice hook that is called before transferERC20From
+     */
+    function _beforeTransferERC20From(address token, address from, address to, uint256 amount) internal virtual view erc20IsTracked(token) {}
+
+
+    /**
      * @notice hook that is called before approveERC20
      */
     function _beforeApproveERC20(address token, address spender, uint256 amount) internal virtual view erc20IsTracked(token) {}

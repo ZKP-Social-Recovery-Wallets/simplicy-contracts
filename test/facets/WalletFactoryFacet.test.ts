@@ -107,14 +107,6 @@ describe("WalletFactoryFacet", function () {
 
     walletDiamond = await run("deploy:diamond", {
       name: "SimplicyWalletDiamond",
-      args: [
-        walletFacets[0].address,
-        semaphoreGroupsFacet.address,
-        "1",
-        "16",
-        ethers.constants.AddressZero,
-        this.deployer.address,
-      ],
       logs: false,
     });
 

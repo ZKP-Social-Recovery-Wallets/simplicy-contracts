@@ -15,7 +15,7 @@ const depth: Number = Number(process.env.TREE_DEPTH);
 const zero: BigNumber = ethers.constants.Zero;
 const members: bigint[] = createIdentityCommitments(3);
 
-describe.only("SemaphoreGroupsFacet", function () {
+describe("SemaphoreGroupsFacet", function () {
   let owner: SignerWithAddress;
   let nomineeOwner: SignerWithAddress;
   let nonOwner: SignerWithAddress;

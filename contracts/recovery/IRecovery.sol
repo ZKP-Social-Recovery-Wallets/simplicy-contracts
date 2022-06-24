@@ -9,18 +9,35 @@ import {IRecoveryInternal} from "./IRecoveryInternal.sol";
  */
 interface IRecovery is IRecoveryInternal {
     /**
-     * @notice recover a wallet by setting a new owner,
-     *          saves the nullifier hash to avoid double signaling and emits an event
-     *          if the zero-knowledge proof is valid
-     * @param groupId: group id of the group.
-     * @param signal: semaphore signal.
-     * @param nullifierHash: nullifier hash.
-     * @param externalNullifier: external nullifier.
-     * @param proof: zero-knowledge proof.
-     * @param newOwner: new owner of the wallet.
+     * @notice query the status of the recovery
+     */
+    function getRecoveryStatus() external view returns (RecoveryStatus);
+
+    /**
+     * @notice query the majority of the recovery
+     */
+    function getMajority() external view returns (uint256);
+
+    /**
+     * @notice query the nominee of the recovery
+     */
+    function getRecoveryNominee() external view returns (address);
+
+    /**
+     * @notice query the counter of the recovery
+     */
+    function getRecoveryCounter() external view returns (uint8);
+
+    /**
+     * @notice recover the wallet by setting a new owner.
+     * @param groupId the group id of the semaphore groups
+     * @param signal: semaphore signal
+     * @param nullifierHash: nullifier hash
+     * @param externalNullifier: external nullifier
+     * @param proof: Zero-knowledge proof
      */
     function recover(
-        int256 groupId,
+        uint256 groupId,
         bytes32 signal,
         uint256 nullifierHash,
         uint256 externalNullifier,
@@ -28,8 +45,8 @@ interface IRecovery is IRecoveryInternal {
         address newOwner
     ) external;
 
-     /**
-     * @notice accept ownership called by the nomineeOwner
+    /**
+     * @notice reset the recovery
      */
-    function acceptRecovery() external;
+    function resetRecovery() external;
 }

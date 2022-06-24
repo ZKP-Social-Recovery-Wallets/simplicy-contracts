@@ -71,14 +71,16 @@ library GuardianStorage {
         uint256 hashId
     ) internal returns (bool) {
         uint index = s.guardianIndex[hashId];
-        uint arrayIndex = index - 1;
-        require(arrayIndex >= 0, "Guardian: GUARDIAN_NOT_EXISTS");
-        require(s.guardians[arrayIndex].status == 1, "Guardian: GUARDIAN_NOT_ADDED");
+        require(index > 0, "Guardian: GUARDIAN_NOT_EXISTS");
 
-        Guardian storage g = s.guardians[arrayIndex];
+        uint arrayIndex = index - 1;
+         require(arrayIndex >= 0, "Guardian: ARRAY_INDEX_OUT_OF_BOUNDS");
+
+        // require(s.guardians[arrayIndex].status == 1, "Guardian: GUARDIAN_NOT_ADDED");
+
         if(arrayIndex != s.guardians.length - 1) {
-            g = s.guardians[s.guardians.length - 1];
-            s.guardianIndex[g.hashId] = index;
+            s.guardians[arrayIndex] = s.guardians[s.guardians.length - 1];
+            s.guardianIndex[s.guardians[arrayIndex].hashId] = index;
         }
         s.guardians.pop();
         delete s.guardianIndex[hashId];

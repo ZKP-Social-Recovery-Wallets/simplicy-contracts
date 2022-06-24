@@ -7,16 +7,27 @@ type DeployedContract = {
   address: string;
 };
 
-task("deploy:facets", "Deploy Facet contracts")
+task("deploy:facets-with-poseidon", "Deploy Facet with poseidon contract")
   .addOptionalParam<boolean>("logs", "Print the logs", true, types.boolean)
+  .addParam("library", "PoseidonT3 address", undefined, types.string)
   .addParam("facets", "Facets json", undefined, types.json)
   .setAction(
-    async ({ logs, facets }, { ethers }): Promise<DeployedContract[]> => {
+    async (
+      { logs, library, facets },
+      { ethers }
+    ): Promise<DeployedContract[]> => {
       let contracts: DeployedContract[] = [];
 
       logs && console.log(facets);
       for (let i = 0; i < facets.length; i++) {
-        const ContractFactory = await ethers.getContractFactory(facets[i].name);
+        const ContractFactory = await ethers.getContractFactory(
+          facets[i].name,
+          {
+            libraries: {
+              PoseidonT3: library,
+            },
+          }
+        );
         const contract = await ContractFactory.deploy();
 
         await contract.deployed();

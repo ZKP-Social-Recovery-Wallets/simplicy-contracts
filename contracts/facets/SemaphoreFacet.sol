@@ -13,7 +13,7 @@ contract SemaphoreFacet is Semaphore, OwnableInternal {
     /**
      * @notice return the current version of SemaphoreFacet
      */
-    function semaphoreFacetFacetVersion() public pure returns (string memory) {
+    function semaphoreFacetVersion() public pure returns (string memory) {
         return "0.0.1";
     }
 

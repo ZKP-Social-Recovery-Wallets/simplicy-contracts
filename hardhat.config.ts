@@ -11,12 +11,9 @@ import "hardhat-spdx-license-identifier";
 import "solidity-coverage";
 import "./tasks/accounts";
 import "./tasks/deploy-diamond";
-import "./tasks/deploy-walletFactory-diamond";
 import "./tasks/deploy-poseidonT3";
-import "./tasks/deploy-semaphore";
-import "./tasks/deploy-semaphoreGroupsFacet";
-import "./tasks/deploy-semaphoreVotingFacet";
 import "./tasks/deploy-facets";
+import "./tasks/deploy-facets-with-poseidon";
 import "./tasks/deploy-verifier";
 
 dotenv.config();
